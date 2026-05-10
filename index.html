@@ -1,3 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hippoman 炒飯雲端管理系統</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root { --primary: #f39c12; --dark: #2c3e50; --bg: #f4f7f6; --border: #dee2e6; --success: #27ae60; --danger: #e74c3c; --accent: #3498db; }
+        * { box-sizing: border-box; }
+        body { font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; margin: 0; display: flex; height: 100vh; background: var(--bg); overflow: hidden; }
+        
+        /* Layout & Sidebar */
+        .mobile-header { display: none; background: var(--dark); color: white; padding: 10px 15px; width: 100%; position: fixed; top: 0; z-index: 1000; justify-content: space-between; align-items: center; }
+        .sidebar { width: 230px; background: var(--dark); color: white; display: flex; flex-direction: column; flex-shrink: 0; transition: transform 0.3s ease; z-index: 999; }
+        .sidebar-header { padding: 25px 20px; text-align: center; font-weight: bold; color: var(--primary); background: rgba(0,0,0,0.2); font-size: 1.2rem; }
+        .nav-group { padding: 15px 0 5px 20px; font-size: 11px; color: #7f8c8d; text-transform: uppercase; letter-spacing: 1px; }
+        .nav-btn { padding: 15px 20px; border: none; background: none; color: #bdc3c7; text-align: left; cursor: pointer; transition: 0.3s; border-left: 4px solid transparent; width: 100%; font-size: 14px; }
+        .nav-btn.active { background: #34495e; color: var(--primary); border-left: 4px solid var(--primary); }
+
+        /* Main Content */
+        .main-content { flex: 1; overflow-y: auto; padding: 30px; }
+        .page { display: none; }
+        .page.active { display: block; }
+
+        /* Card & Grids */
+        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid var(--border); overflow-x: auto; }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: white; padding: 15px; border-radius: 12px; text-align: center; border-top: 5px solid var(--primary); }
+        .stat-value { font-size: 20px; font-weight: bold; margin-top: 5px; }
+
+        .chart-container { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; }
+        .chart-box { flex: 1; min-width: 300px; background: white; padding: 15px; border-radius: 12px; border: 1px solid var(--border); min-height: 250px; display: flex; flex-direction: column; align-items: center; }
+        canvas { width: 100% !important; max-height: 180px !important; }
+
+        .grid-header, .grid-row { display: grid; gap: 5px; align-items: center; min-width: 450px; }
+        .grid-header { font-weight: bold; padding: 8px; background: #f8f9fa; font-size: 12px; text-align: center; border-radius: 4px; border-bottom: 1px solid var(--border); }
+        .grid-row { margin-top: 8px; }
+        input { padding: 10px 5px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; text-align: center; width: 100%; }
+        
+        .sales-grid { grid-template-columns: 2fr 1fr 0.8fr 1.2fr; }
+        .setting-grid { grid-template-columns: 2fr 1fr 1fr; }
+        .cost-grid { grid-template-columns: 1.4fr 1fr 1fr 0.8fr 0.4fr; }
+
+        .btn-main { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; font-size: 15px; }
+        .btn-del { border:none; background:none; color:#ccc; cursor:pointer; font-size: 20px; }
+
+        /* History Details */
+        .history-row { cursor: pointer; border-bottom: 1px solid var(--border); }
+        .details-pane { display: none; background: #fdfdfd; padding: 15px; border-bottom: 2px solid var(--primary); text-align: left; }
+        .details-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .mobile-header { display: flex; }
+            .sidebar { position: fixed; top: 50px; left: 0; height: calc(100vh - 50px); transform: translateX(-100%); width: 80%; }
+            .sidebar.show { transform: translateX(0); }
+            .main-content { padding: 70px 15px 20px 15px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="mobile-header">
+    <div style="font-weight:bold; color:var(--primary);">炒飯雲端管理</div>
+    <button onclick="toggleMenu()" style="background:none; border:1px solid #7f8c8d; color:white; border-radius:4px; padding:5px 10px;">選單 ☰</button>
+</div>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">Hippoman Pro</div>
+    <div class="nav-group">數據分析</div>
+    <button class="nav-btn active" onclick="showPage('dash-page', this)">📊 營運分析總表</button>
+    <button class="nav-btn" onclick="showPage('daily-page', this)">✍️ 今日銷量輸入</button>
+    <div class="nav-group">成本與設定</div>
+    <button class="nav-btn" onclick="showPage('product-page', this)">🍱 品項定價設定</button>
+    <button class="nav-btn" onclick="showPage('food-page', this)">🥬 食材採購明細</button>
+    <button class="nav-btn" onclick="showPage('other-page', this)">📦 雜支帳單明細</button>
+    <div class="nav-group">存檔</div>
+    <button class="nav-btn" onclick="showPage('history-page', this)">📜 歷史結算紀錄</button>
+</div>
+
+<div class="main-content">
+    <div id="dash-page" class="page active">
+        <h2>本月經營分析 (雲端同步)</h2>
+        <div class="dashboard-grid">
+            <div class="stat-card"><div>實領營收</div><div id="dash-revenue" class="stat-value">$ 0</div></div>
+            <div class="stat-card"><div>預計支出</div><div id="dash-cost" class="stat-value" style="color:var(--danger)">$ 0</div></div>
+            <div class="stat-card"><div>預估純利</div><div id="dash-net" class="stat-value" style="color:var(--success)">$ 0</div></div>
+        </div>
+        <div class="chart-container">
+            <div class="chart-box"><h4>💰 損益細目佔比</h4><canvas id="profitChart"></canvas></div>
+            <div class="chart-box"><h4>🏆 本月銷量排行</h4><canvas id="salesChart"></canvas></div>
+        </div>
+        <button class="btn-main" onclick="window.archiveMonth()">🔒 執行月結算並存檔</button>
+    </div>
+
+    <div id="daily-page" class="page">
+        <h2>✍️ 今日銷量填寫</h2>
+        <div class="card">
+            <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                <label style="font-weight:bold;">日期：</label>
+                <input type="date" id="daily-date-picker" style="width:160px;">
+            </div>
+            <div class="grid-header sales-grid"><div>品項名稱</div><div>今日份數</div><div>售價</div><div>本月累計</div></div>
+            <div id="daily-list"></div>
+            <button class="btn-main" style="margin-top:20px;" onclick="window.saveDaily()">💾 確認存檔並同步</button>
+        </div>
+    </div>
+
+    <div id="product-page" class="page">
+        <h2>🍱 品項定價設定</h2>
+        <div class="card">
+            <div class="grid-header setting-grid"><div>品項名稱</div><div>售價</div><div>抽成 %</div></div>
+            <div id="product-settings-list"></div>
+        </div>
+    </div>
+
+    <div id="food-page" class="page">
+        <h2>🥬 食材採購累進紀錄</h2>
+        <div id="food-container"></div>
+    </div>
+
+    <div id="other-page" class="page">
+        <h2>📦 雜支營運累進紀錄</h2>
+        <div id="other-container"></div>
+    </div>
+
+    <div id="history-page" class="page">
+        <h2>📜 歷史結算詳情</h2>
+        <div class="card" id="history-list" style="padding:0;"></div>
+    </div>
+</div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -48,7 +182,7 @@
     onSnapshot(docRef, (snap) => {
         if (snap.exists()) {
             appData = snap.data();
-            checkInitialCosts(); // 確保新加入的品項也能正常顯示
+            checkInitialCosts();
             renderAll();
         } else {
             checkInitialCosts();
@@ -78,7 +212,8 @@
     }
 
     function renderDaily() {
-        const c = document.getElementById('daily-list'); c.innerHTML = '';
+        const c = document.getElementById('daily-list'); if(!c) return;
+        c.innerHTML = '';
         appData.products.forEach((p, i) => {
             const row = document.createElement('div'); row.className = 'grid-row sales-grid';
             row.innerHTML = `<div style="text-align:left; font-weight:bold;">${p.name}</div><input type="number" class="day-qty" data-index="${i}" value="0"><div>$${p.price}</div><div style="font-weight:bold; color:var(--accent); text-align:center;">${p.vol}</div>`;
@@ -95,18 +230,19 @@
     };
 
     function renderProductSettings() {
-        const c = document.getElementById('product-settings-list'); c.innerHTML = '';
+        const c = document.getElementById('product-settings-list'); if(!c) return;
+        c.innerHTML = '';
         appData.products.forEach((p, i) => {
             const row = document.createElement('div'); row.className = 'grid-row setting-grid';
-            row.innerHTML = `<input type="text" value="${p.name}" onchange="updateProd(${i},'name',this.value)"><input type="number" value="${p.price}" onchange="updateProd(${i},'price',this.value)"><input type="number" value="${p.comm}" onchange="updateProd(${i},'comm',this.value)">`;
+            row.innerHTML = `<input type="text" value="${p.name}" onchange="window.updateProd(${i},'name',this.value)"><input type="number" value="${p.price}" onchange="window.updateProd(${i},'price',this.value)"><input type="number" value="${p.comm}" onchange="window.updateProd(${i},'comm',this.value)">`;
             c.appendChild(row);
         });
     }
     window.updateProd = (i, k, v) => { appData.products[i][k] = (k==='name'?v:parseFloat(v)||0); sync(); };
 
-    // 修復標題不見的問題
     function renderProgressive(type, containerId) {
-        const container = document.getElementById(containerId); container.innerHTML = '';
+        const container = document.getElementById(containerId); if(!container) return;
+        container.innerHTML = '';
         for (let name in appData.costs[type]) {
             let total = 0; appData.costs[type][name].forEach(r => total += (r.price * r.qty));
             const div = document.createElement('div'); div.className = 'card';
@@ -119,13 +255,13 @@
                     <div>日期</div><div>單價</div><div>數量</div><div>小計</div><div></div>
                 </div>
                 <div id="list-${type}-${name}"></div>
-                <button class="btn-main" style="padding:8px; margin-top:10px; font-size:12px;" onclick="addRow('${type}', '${name}')">+ 新增</button>
+                <button class="btn-main" style="padding:8px; margin-top:10px; font-size:12px;" onclick="window.addRow('${type}', '${name}')">+ 新增筆數</button>
             `;
             container.appendChild(div);
             const body = document.getElementById(`list-${type}-${name}`);
             appData.costs[type][name].forEach((r, idx) => {
                 const row = document.createElement('div'); row.className = 'grid-row cost-grid';
-                row.innerHTML = `<input type="date" value="${r.date}" onchange="updateRecord('${type}','${name}',${idx},'date',this.value)"><input type="number" value="${r.price}" onchange="updateRecord('${type}','${name}',${idx},'price',this.value)"><input type="number" value="${r.qty}" onchange="updateRecord('${type}','${name}',${idx},'qty',this.value)"><div>$${Math.round(r.price*r.qty)}</div><button class="btn-del" onclick="delRow('${type}','${name}',${idx})">×</button>`;
+                row.innerHTML = `<input type="date" value="${r.date}" onchange="window.updateRecord('${type}','${name}',${idx},'date',this.value)"><input type="number" value="${r.price}" onchange="window.updateRecord('${type}','${name}',${idx},'price',this.value)"><input type="number" value="${r.qty}" onchange="window.updateRecord('${type}','${name}',${idx},'qty',this.value)"><div>$${Math.round(r.price*r.qty)}</div><button class="btn-del" onclick="window.delRow('${type}','${name}',${idx})">×</button>`;
                 body.appendChild(row);
             });
         }
@@ -168,7 +304,7 @@
     }
 
     window.archiveMonth = () => {
-        if(!confirm("確定結算嗎？數據將歸零並存入歷史紀錄。")) return;
+        if(!confirm("確定結算嗎？本月數據將歸零並存入歷史紀錄。")) return;
         const s = calculateDash();
         appData.history.push({
             date: new Date().toLocaleDateString(),
@@ -185,17 +321,16 @@
     };
 
     function renderHistory() {
-        const c = document.getElementById('history-list');
-        // 加入清空按鈕
+        const c = document.getElementById('history-list'); if(!c) return;
         const historyHeader = `
-            <div style="display:flex; justify-content:space-between; align-items:center; padding:15px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid var(--border);">
                 <span style="font-weight:bold; color:var(--dark);">歷史存檔列表</span>
-                <button onclick="clearHistory()" style="background:var(--danger); color:white; border:none; padding:5px 12px; border-radius:4px; cursor:pointer; font-size:12px; font-weight:bold;">🚫清空記錄</button>
+                <button onclick="window.clearHistory()" style="background:var(--danger); color:white; border:none; padding:5px 12px; border-radius:4px; cursor:pointer; font-size:12px; font-weight:bold;">🚫清空記錄</button>
             </div>
         `;
         
         if (!appData.history.length) { 
-            c.innerHTML = historyHeader + '<table style="width:100%; border-collapse: collapse;"><tr><td style="padding:20px;color:#999;text-align:center;">暫無紀錄</td></tr></table>'; 
+            c.innerHTML = historyHeader + '<div style="padding:20px;color:#999;text-align:center;">暫無紀錄</div>'; 
             return; 
         }
 
@@ -211,8 +346,8 @@
                 <tr>
                     <td colspan="4" style="padding:0;"><div id="det-${realIdx}" class="details-pane">
                         <div class="details-grid">
-                            <div><div style="font-weight:bold;margin-bottom:5px;">🍱 銷量</div>${h.sales.map(s=>`<div>${s.name}: ${s.vol}份</div>`).join('')}</div>
-                            <div><div style="font-weight:bold;margin-bottom:5px;">💰 支出</div>食材: $${Math.round(h.fCost)}<br>雜支: $${Math.round(h.oCost)}</div>
+                            <div><div style="font-weight:bold;margin-bottom:5px;">🍱 銷量詳情</div>${h.sales.map(s=>`<div>${s.name}: ${s.vol}份</div>`).join('')}</div>
+                            <div><div style="font-weight:bold;margin-bottom:5px;">💰 支出摘要</div>食材: $${Math.round(h.fCost)}<br>雜支: $${Math.round(h.oCost)}</div>
                         </div>
                     </div></td>
                 </tr>`;
@@ -221,15 +356,22 @@
         c.innerHTML = historyHeader + tableHtml;
     }
 
-    // 清空紀錄功能
     window.clearHistory = () => {
-        if(confirm("⚠ 注意！這將永久刪除雲端上所有的歷史結算紀錄，無法恢復。\n確定要清空嗎？")) {
+        if(confirm("⚠ 警告！這將永久刪除雲端所有的歷史紀錄且無法還原。\n確定要執行嗎？")) {
             appData.history = [];
             sync();
-            alert("歷史紀錄已清空。");
+            alert("歷史紀錄已成功清空。");
         }
     };
 
-    document.getElementById('daily-date-picker').value = new Date().toISOString().split('T')[0];
-    window.onload = () => { initCharts(); renderAll(); };
+    // 初始化與日期設定
+    const datePicker = document.getElementById('daily-date-picker');
+    if(datePicker) datePicker.value = new Date().toISOString().split('T')[0];
+    
+    window.onload = () => { 
+        initCharts(); 
+        renderAll(); 
+    };
 </script>
+</body>
+</html>
