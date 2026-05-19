@@ -44,11 +44,11 @@
         /* 日期區塊 */
         .cal-day .date-num { color: #555; font-size: 15px; font-family: "Helvetica Neue", Arial, sans-serif; font-weight: bold; text-align: left; align-self: flex-start; }
         
-        /* 營業數據包裹層：寬度撐滿，限制最高只能佔格子的 80%，超過會隱藏，確保絕對不往上蓋到日期 */
-        .cal-day .data-wrapper { display: flex; flex-direction: column; align-items: flex-end; justify-content: flex-end; width: 100%; max-height: 80%; line-height: 1.1; overflow: hidden; }
+        /* 營業數據包裹層：寬度撐滿，限制最高只能佔格子的 70%，超過會隱藏，確保絕對不往上蓋到日期 */
+        .cal-day .data-wrapper { display: flex; flex-direction: column; align-items: flex-end; justify-content: flex-end; width: 100%; max-height: 70%; line-height: 1.1; overflow: hidden; }
         
         /* 🚀 使用 clamp() 搭配 cqw，讓字體隨格子寬度流暢無級別放大填滿，但限制最寬/最窄的極限安全值 */
-        .cal-day .rev-val, .cal-day .cost-val { font-weight: bold; white-space: nowrap; text-align: right; width: 100%; font-size: clamp(10px, 18cqw, 29px); }
+        .cal-day .rev-val, .cal-day .cost-val { font-weight: bold; white-space: nowrap; text-align: right; width: 100%; font-size: clamp(10px, 20cqw, 46px); }
         .cal-day .rev-val { color: #2ecc71; } 
         .cal-day .cost-val { color: #e74c3c; } 
         
