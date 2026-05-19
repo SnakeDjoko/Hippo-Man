@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hippoman 炒飯雲端管理系統</title>
+    <title>河馬Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
-        :root { --primary: #f39c12; --dark: #2c3e50; --bg: #f4f7f6; --border: #dee2e6; --success: #27ae60; --danger: #e74c3c; --accent: #3498db; }
+        :root { --primary: #f39c12; --dark: #2c3e50; --bg: #f4f7f6; --border: #dee2e6; --success: #27ae60; --danger: #e74c3c; --accent: #3498db; --closed: #2c3e50; }
         * { box-sizing: border-box; }
         body { font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; margin: 0; display: flex; height: 100vh; background: var(--bg); overflow: hidden; }
         
+        /* Layout */
         .mobile-header { display: none; background: var(--dark); color: white; padding: 10px 15px; width: 100%; position: fixed; top: 0; z-index: 1000; justify-content: space-between; align-items: center; }
         .sidebar { width: 230px; background: var(--dark); color: white; display: flex; flex-direction: column; flex-shrink: 0; transition: transform 0.3s ease; z-index: 999; }
         .sidebar-header { padding: 25px 20px; text-align: center; font-weight: bold; color: var(--primary); background: rgba(0,0,0,0.2); font-size: 1.2rem; }
@@ -27,25 +28,50 @@
         .stat-card { background: white; padding: 15px; border-radius: 12px; text-align: center; border-top: 5px solid var(--primary); }
         .stat-value { font-size: 20px; font-weight: bold; margin-top: 5px; }
 
+        /* 圖表固定高度 */
         .chart-container { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; }
-        .chart-box { flex: 1; min-width: 300px; background: white; padding: 15px; border-radius: 12px; border: 1px solid var(--border); min-height: 250px; display: flex; flex-direction: column; align-items: center; }
-        canvas { width: 100% !important; max-height: 180px !important; }
+        .chart-box { flex: 1; min-width: 300px; background: white; padding: 15px; border-radius: 12px; border: 1px solid var(--border); max-height: 280px; display: flex; flex-direction: column; align-items: center; }
+        canvas { width: 100% !important; max-height: 200px !important; }
 
+        /* Calendar Styles (數據放大 60% 與右歪休字版) */
+        .calendar-box { margin-bottom: 25px; }
+        .calendar-header { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: bold; background: #eee; padding: 12px 0; border-radius: 8px 8px 0 0; font-size: 14px; color: var(--dark); }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); border-left: 1px solid var(--border); border-top: 1px solid var(--border); background: white; }
+        .cal-day { height: 115px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 8px; position: relative; }
+        
+        /* 日期數字靠左上角 */
+        .cal-day .date-num { color: #555; font-size: 16px; position: absolute; top: 10px; left: 12px; font-family: "Helvetica Neue", Arial, sans-serif; font-weight: bold; }
+        
+        /* 營業數據靠右下角 (放大佔據約 60% 空間) */
+        .cal-day .data-wrapper { display: flex; flex-direction: column; align-items: flex-end; position: absolute; bottom: 8px; right: 12px; font-size: 24px; font-weight: bold; line-height: 1.15; letter-spacing: 0.3px; }
+        .cal-day .rev-val { color: #2ecc71; } 
+        .cal-day .cost-val { color: #e74c3c; } 
+        
+        /* 店休「休」字置中特大號 (改成向右歪 6 度) */
+        .cal-day .closed-tag { position: absolute; top: 52%; left: 55%; transform: translate(-50%, -50%) rotate(6deg); font-weight: 800; color: #34495e; font-size: 48px; font-family: "BiauKai", "DFKai-SB", "標楷體", serif; text-shadow: 2px 2px 3px rgba(0,0,0,0.1); letter-spacing: 1px; }
+        
+        .cal-day.today { background: #fff9e6; border: 2px solid var(--primary); z-index: 2; }
+        .cal-day.empty { background: #fafafa; }
+
+        /* Grid Alignment */
         .grid-header, .grid-row { display: grid; gap: 5px; align-items: center; min-width: 450px; }
         .grid-header { font-weight: bold; padding: 8px; background: #f8f9fa; font-size: 12px; border-radius: 4px; border-bottom: 1px solid var(--border); }
         .grid-row { margin-top: 8px; }
         .text-center { text-align: center; }
         
-        .category-divider { background: #fdf2e2; padding: 8px 15px; margin: 20px 0 10px 0; border-radius: 6px; font-size: 14px; font-weight: bold; color: #d35400; display: block; width: 100%; text-align: left; border-left: 5px solid var(--primary); }
+        .category-divider { background: #fdf2e2; padding: 8px 15px; margin: 20px 0 10px 0; border-radius: 6px; font-size: 14px; font-weight: bold; color: #d35400; text-align: left; border-left: 5px solid var(--primary); }
 
         input { padding: 10px 5px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; text-align: center; width: 100%; }
-        
         .sales-grid { grid-template-columns: 2fr 1fr 1fr 1.2fr; }
         .setting-grid { grid-template-columns: 2fr 1fr 1fr; }
         .cost-grid { grid-template-columns: 1.4fr 1fr 1fr 1fr 0.4fr; }
 
-        .btn-main { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; font-size: 15px; }
+        .btn-main { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; font-size: 14px; }
+        .btn-rest { background: #95a5a6; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; }
         .btn-del { border:none; background:none; color:#ccc; cursor:pointer; font-size: 20px; }
+
+        .history-row { cursor: pointer; border-bottom: 1px solid var(--border); }
+        .details-pane { display: none; background: #fdfdfd; padding: 15px; border-bottom: 2px solid var(--primary); }
 
         @media (max-width: 768px) {
             body { flex-direction: column; }
@@ -53,6 +79,9 @@
             .sidebar { position: fixed; top: 50px; left: 0; height: calc(100vh - 50px); transform: translateX(-100%); width: 80%; }
             .sidebar.show { transform: translateX(0); }
             .main-content { padding: 70px 15px 20px 15px; }
+            .cal-day { height: 105px; }
+            .cal-day .data-wrapper { font-size: 18px; }
+            .cal-day .closed-tag { font-size: 40px; }
         }
     </style>
 </head>
@@ -64,7 +93,7 @@
 </div>
 
 <div class="sidebar" id="sidebar">
-    <div class="sidebar-header">Hippoman Pro</div>
+    <div class="sidebar-header">河馬職人炒飯</div>
     <div class="nav-group">數據分析</div>
     <button class="nav-btn active" onclick="showPage('dash-page', this)">📊 營運分析總表</button>
     <button class="nav-btn" onclick="showPage('daily-page', this)">✍️ 今日銷量輸入</button>
@@ -85,18 +114,21 @@
             <div class="stat-card"><div>預估純利</div><div id="dash-net" class="stat-value" style="color:var(--success)">$ 0</div></div>
         </div>
         <div class="chart-container">
-            <div class="chart-box"><h4>💰 損益細目佔比</h4><canvas id="profitChart"></canvas></div>
-            <div class="chart-box"><h4>🏆 本月銷量排行</h4><canvas id="salesChart"></canvas></div>
+            <div class="chart-box"><h4>💰 損益佔比</h4><canvas id="profitChart"></canvas></div>
+            <div class="chart-box"><h4>🏆 銷量排行</h4><canvas id="salesChart"></canvas></div>
         </div>
         <button class="btn-main" onclick="window.archiveMonth()">🔒 執行月結算並存檔</button>
     </div>
 
     <div id="daily-page" class="page">
-        <h2>✍️ 今日銷量填寫</h2>
+        <h2>✍️ 今日銷量輸入</h2>
         <div class="card">
-            <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
-                <label style="font-weight:bold;">日期：</label>
-                <input type="date" id="daily-date-picker" style="width:160px;">
+            <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <label style="font-weight:bold;">日期：</label>
+                    <input type="date" id="daily-date-picker" style="width:150px;">
+                </div>
+                <button class="btn-rest" onclick="window.shopClosed()">🚫 今日店休</button>
             </div>
             <div class="grid-header sales-grid">
                 <div>品項名稱</div><div>今日份數</div><div class="text-center">售價</div><div class="text-center">本月累計</div>
@@ -125,7 +157,12 @@
     </div>
 
     <div id="history-page" class="page">
-        <h2>📜 歷史結算詳情</h2>
+        <h2>📜 歷史結算紀錄</h2>
+        <div class="card calendar-box">
+            <div id="calendar-title" style="padding:12px; font-weight:bold; text-align:center; font-size:18px; color:var(--dark);">月曆視圖</div>
+            <div class="calendar-header"><div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div></div>
+            <div class="calendar-grid" id="calendar-grid"></div>
+        </div>
         <div class="card" id="history-list" style="padding:0;"></div>
     </div>
 </div>
@@ -148,44 +185,22 @@
     const db = getFirestore(app);
     const docRef = doc(db, "appData", "current");
 
-    const CATEGORIES = {
-        FRIED_RICE: "🍚 炒飯系列",
-        DRINK: "🥤 飲品系列",
-        SIDE: "🥗 小菜系列"
-    };
+    const CATEGORIES = { FRIED_RICE: "🍚 炒飯系列", DRINK: "🥤 飲品系列", SIDE: "🥗 小菜系列" };
+    const catMap = { "黃金蛋炒飯": CATEGORIES.FRIED_RICE, "高麗菜炒飯": CATEGORIES.FRIED_RICE, "鳳梨炒飯": CATEGORIES.FRIED_RICE, "香腸蛋炒飯": CATEGORIES.FRIED_RICE, "甜玉米炒飯": CATEGORIES.FRIED_RICE, "香腸玉米炒飯": CATEGORIES.FRIED_RICE, "可樂": CATEGORIES.DRINK, "雪碧": CATEGORIES.DRINK, "絲絨奶茶": CATEGORIES.DRINK, "金鑽鳳梨氣泡飲": CATEGORIES.DRINK, "炒高麗菜": CATEGORIES.SIDE, "泡菜": CATEGORIES.SIDE };
 
-    const catMap = {
-        "黃金蛋炒飯": CATEGORIES.FRIED_RICE, "高麗菜炒飯": CATEGORIES.FRIED_RICE, "鳳梨炒飯": CATEGORIES.FRIED_RICE,
-        "香腸蛋炒飯": CATEGORIES.FRIED_RICE, "甜玉米炒飯": CATEGORIES.FRIED_RICE, "香腸玉米炒飯": CATEGORIES.FRIED_RICE,
-        "可樂": CATEGORIES.DRINK, "雪碧": CATEGORIES.DRINK, "絲絨奶茶": CATEGORIES.DRINK, "金鑽鳳梨氣泡飲": CATEGORIES.DRINK,
-        "炒高麗菜": CATEGORIES.SIDE, "泡菜": CATEGORIES.SIDE
-    };
+    let appData = { products: [], costs: { food: {}, other: {} }, history: [] };
 
-    let appData = {
-        products: [],
-        costs: { food: {}, other: {} },
-        history: []
-    };
-
-    // 核心邏輯：確保每個分類都有 3 個空白項
     function ensureEmptySlots() {
-        Object.values(CATEGORIES).forEach(catName => {
-            const catProducts = appData.products.filter(p => p.cat === catName);
-            const emptyCount = catProducts.filter(p => p.name === "").length;
-            if (emptyCount < 3) {
-                for (let i = 0; i < (3 - emptyCount); i++) {
-                    appData.products.push({ name: "", price: 0, comm: 35, vol: 0, cat: catName });
-                }
-            }
+        Object.values(CATEGORIES).forEach(cat => {
+            const count = appData.products.filter(p => p.cat === cat && p.name === "").length;
+            if(count < 3) for(let i=0; i<(3-count); i++) appData.products.push({name:"", price:0, comm:35, vol:0, cat:cat});
         });
     }
 
     onSnapshot(docRef, (snap) => {
         if (snap.exists()) {
             appData = snap.data();
-            appData.products.forEach(p => {
-                if (!p.cat) p.cat = catMap[p.name] || CATEGORIES.FRIED_RICE;
-            });
+            appData.products.forEach(p => { if(!p.cat) p.cat = catMap[p.name] || CATEGORIES.FRIED_RICE; });
             ensureEmptySlots();
             renderAll();
         }
@@ -208,24 +223,22 @@
         renderProgressive('food', 'food-container');
         renderProgressive('other', 'other-container');
         renderHistory();
+        renderCalendar();
         const s = calculateDash();
         if(profitChart) updateCharts(s);
     }
 
     function renderDaily() {
         const c = document.getElementById('daily-list'); if(!c) return;
-        c.innerHTML = '';
-        let currentCat = "";
-        // 只顯示有名稱的品項
+        c.innerHTML = ''; let curCat = "";
         appData.products.filter(p => p.name !== "").forEach((p, i) => {
-            if (p.cat !== currentCat) {
-                currentCat = p.cat;
-                const div = document.createElement('div'); div.className = 'category-divider';
-                div.innerText = currentCat; c.appendChild(div);
+            if (p.cat !== curCat) {
+                curCat = p.cat; const div = document.createElement('div');
+                div.className = 'category-divider'; div.innerText = curCat; c.appendChild(div);
             }
-            const actualIndex = appData.products.indexOf(p);
+            const actualIdx = appData.products.indexOf(p);
             const row = document.createElement('div'); row.className = 'grid-row sales-grid';
-            row.innerHTML = `<div style="text-align:left; font-weight:bold;">${p.name}</div><input type="number" class="day-qty" data-index="${actualIndex}" value="0"><div class="text-center">$${p.price}</div><div style="font-weight:bold; color:var(--accent); text-align:center;">${p.vol}</div>`;
+            row.innerHTML = `<div style="text-align:left; font-weight:bold;">${p.name}</div><input type="number" class="day-qty" data-index="${actualIdx}" value="0"><div class="text-center">$${p.price}</div><div class="text-center" style="font-weight:bold; color:var(--accent);">${p.vol}</div>`;
             c.appendChild(row);
         });
     }
@@ -235,41 +248,35 @@
             appData.products[input.dataset.index].vol += (parseFloat(input.value) || 0);
             input.value = 0;
         });
-        sync(); alert("今日銷量已累加並雲端同步！");
+        sync(); alert("銷量累加成功！");
+    };
+
+    window.shopClosed = () => {
+        const date = document.getElementById('daily-date-picker').value;
+        if(!confirm(`確定要在 ${date} 店休結算嗎？`)) return;
+        appData.history.push({
+            date: date, rev: 0, fCost: 0, oCost: 0, net: 0,
+            isClosed: true, sales: []
+        });
+        sync(); alert("店休紀錄已存檔！");
     };
 
     function renderProductSettings() {
         const c = document.getElementById('product-settings-list'); if(!c) return;
-        c.innerHTML = '';
-        let currentCat = "";
-        
-        // 按分類排序並渲染所有欄位（含空白）
-        const sortedProducts = [...appData.products].sort((a,b) => {
-            const order = Object.values(CATEGORIES);
-            return order.indexOf(a.cat) - order.indexOf(b.cat);
-        });
-
-        sortedProducts.forEach((p) => {
-            if (p.cat !== currentCat) {
-                currentCat = p.cat;
-                const div = document.createElement('div'); div.className = 'category-divider';
-                div.innerText = currentCat; c.appendChild(div);
+        c.innerHTML = ''; let curCat = "";
+        const sorted = [...appData.products].sort((a,b) => Object.values(CATEGORIES).indexOf(a.cat) - Object.values(CATEGORIES).indexOf(b.cat));
+        sorted.forEach(p => {
+            if (p.cat !== curCat) {
+                curCat = p.cat; const div = document.createElement('div');
+                div.className = 'category-divider'; div.innerText = curCat; c.appendChild(div);
             }
-            const actualIndex = appData.products.indexOf(p);
+            const actualIdx = appData.products.indexOf(p);
             const row = document.createElement('div'); row.className = 'grid-row setting-grid';
-            row.innerHTML = `
-                <input type="text" placeholder="輸入新稱" value="${p.name}" onchange="window.updateProd(${actualIndex},'name',this.value)">
-                <input type="number" value="${p.price}" onchange="window.updateProd(${actualIndex},'price',this.value)">
-                <input type="number" value="${p.comm}" onchange="window.updateProd(${actualIndex},'comm',this.value)">
-            `;
+            row.innerHTML = `<input type="text" placeholder="名稱" value="${p.name}" onchange="window.updateProd(${actualIdx},'name',this.value)"><input type="number" value="${p.price}" onchange="window.updateProd(${actualIdx},'price',this.value)"><input type="number" value="${p.comm}" onchange="window.updateProd(${actualIdx},'comm',this.value)">`;
             c.appendChild(row);
         });
     }
-    
-    window.updateProd = (i, k, v) => { 
-        appData.products[i][k] = (k==='name'?v:parseFloat(v)||0); 
-        sync(); 
-    };
+    window.updateProd = (i, k, v) => { appData.products[i][k] = (k==='name'?v:parseFloat(v)||0); sync(); };
 
     function renderProgressive(type, containerId) {
         const container = document.getElementById(containerId); if(!container) return;
@@ -278,16 +285,10 @@
             let total = 0; appData.costs[type][name].forEach(r => total += (r.price * r.qty));
             const div = document.createElement('div'); div.className = 'card';
             div.innerHTML = `
-                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                    <span style="font-weight:bold;">${name}</span>
-                    <span style="background:#eee; padding:2px 10px; border-radius:10px; font-size:12px;">$${Math.round(total)}</span>
-                </div>
-                <div class="grid-header cost-grid">
-                    <div>日期</div><div class="text-center">單價</div><div class="text-center">數量</div><div class="text-center">小計</div><div></div>
-                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px;"><span style="font-weight:bold;">${name}</span><span style="background:#eee; padding:2px 10px; border-radius:10px; font-size:12px;">$${Math.round(total)}</span></div>
+                <div class="grid-header cost-grid"><div>日期</div><div class="text-center">單價</div><div class="text-center">數量</div><div class="text-center">小計</div><div></div></div>
                 <div id="list-${type}-${name}"></div>
-                <button class="btn-main" style="padding:8px; margin-top:10px; font-size:12px;" onclick="window.addRow('${type}', '${name}')">+ 新增筆數</button>
-            `;
+                <button class="btn-main" style="padding:8px; margin-top:10px; font-size:12px;" onclick="window.addRow('${type}', '${name}')">+ 新增筆數</button>`;
             container.appendChild(div);
             const body = document.getElementById(`list-${type}-${name}`);
             appData.costs[type][name].forEach((r, idx) => {
@@ -297,7 +298,6 @@
             });
         }
     }
-
     window.addRow = (t, n) => { appData.costs[t][n].push({date: new Date().toISOString().split('T')[0], price: 0, qty: 0}); sync(); };
     window.delRow = (t, n, i) => { appData.costs[t][n].splice(i, 1); if(!appData.costs[t][n].length) appData.costs[t][n]=[{date:"",price:0,qty:0}]; sync(); };
     window.updateRecord = (t, n, i, k, v) => { appData.costs[t][n][i][k] = (k==='date'?v:parseFloat(v)||0); sync(); };
@@ -312,95 +312,113 @@
         return { rev, fCost, oCost, net: rev - (fCost+oCost) };
     }
 
-    function initCharts() {
-        profitChart = new Chart(document.getElementById('profitChart'), {
-            type: 'doughnut',
-            data: { labels: ['食材', '雜支', '純利'], datasets: [{ data: [0,0,0], backgroundColor: ['#e74c3c', '#9b59b6', '#27ae60'] }] },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
-        salesChart = new Chart(document.getElementById('salesChart'), {
-            type: 'bar',
-            data: { labels: [], datasets: [{ data: [], backgroundColor: '#f39c12' }] },
-            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-        });
-    }
+    function renderCalendar() {
+        const grid = document.getElementById('calendar-grid'); if(!grid) return;
+        grid.innerHTML = '';
+        const now = new Date(); const year = now.getFullYear(); const month = now.getMonth();
+        document.getElementById('calendar-title').innerText = `${year}年 ${month + 1}月 營收/支出月曆`;
 
-    function updateCharts(s) {
-        profitChart.data.datasets[0].data = [s.fCost, s.oCost, Math.max(0, s.net)];
-        profitChart.update();
-        const sorted = [...appData.products].filter(p => p.vol > 0).sort((a, b) => b.vol - a.vol);
-        salesChart.data.labels = sorted.map(p => p.name);
-        salesChart.data.datasets[0].data = sorted.map(p => p.vol);
-        salesChart.update();
-    }
+        const firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-    window.archiveMonth = () => {
-        if(!confirm("確定結算嗎？本月數據將歸零並存入歷史紀錄。")) return;
-        const s = calculateDash();
-        appData.history.push({
-            date: new Date().toLocaleDateString(),
-            rev: s.rev, fCost: s.fCost, oCost: s.oCost, net: s.net,
-            sales: appData.products.filter(p => p.vol > 0).map(p => ({name: p.name, vol: p.vol})),
-            foodDetail: Object.keys(appData.costs.food).map(n => {
-                let sum = 0; appData.costs.food[n].forEach(r => sum += (r.price*r.qty));
-                return {n, total: sum};
-            }).filter(i => i.total > 0)
-        });
-        appData.products.forEach(p => p.vol = 0);
-        ['food', 'other'].forEach(t => { for(let n in appData.costs[t]) appData.costs[t][n] = [{date:"", price:0, qty:0}]; });
-        sync(); alert("結算完畢！");
-    };
+        for(let i=0; i<firstDay; i++) {
+            const div = document.createElement('div'); div.className = 'cal-day empty'; grid.appendChild(div);
+        }
+
+        for(let d=1; d<=daysInMonth; d++) {
+            const div = document.createElement('div'); div.className = 'cal-day';
+            if(d === now.getDate()) div.classList.add('today');
+            div.innerHTML = `<span class="date-num">${d}</span>`;
+
+            const record = appData.history.find(h => {
+                const hDate = new Date(h.date);
+                return hDate.getFullYear() === year && hDate.getMonth() === month && hDate.getDate() === d;
+            });
+
+            if(record) {
+                if(record.isClosed) {
+                    div.innerHTML += `<span class="closed-tag">休</span>`;
+                } else {
+                    let totalCost = (record.fCost || 0) + (record.oCost || 0);
+                    div.innerHTML += `
+                        <div class="data-wrapper">
+                            <span class="rev-val">+$${Math.round(record.rev).toLocaleString()}</span>
+                            <span class="cost-val">-$${Math.round(totalCost).toLocaleString()}</span>
+                        </div>`;
+                }
+            }
+            grid.appendChild(div);
+        }
+    }
 
     function renderHistory() {
         const c = document.getElementById('history-list'); if(!c) return;
-        const historyHeader = `
-            <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid var(--border);">
-                <span style="font-weight:bold; color:var(--dark);">歷史存檔列表</span>
-                <button onclick="window.clearHistory()" style="background:var(--danger); color:white; border:none; padding:5px 12px; border-radius:4px; cursor:pointer; font-size:12px; font-weight:bold;">🚫清空記錄</button>
-            </div>
-        `;
-        
-        if (!appData.history.length) { 
-            c.innerHTML = historyHeader + '<div style="padding:20px;color:#999;text-align:center;">暫無紀錄</div>'; 
-            return; 
-        }
-
-        let tableHtml = '<table style="width:100%; border-collapse: collapse; text-align:center;">';
-        tableHtml += '<tr style="background:#f8f9fa;font-weight:bold;"><td style="padding:10px;">日期</td><td>營收</td><td>純利</td><td>詳情</td></tr>';
-        
+        const header = `<div style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid var(--border);"><span style="font-weight:bold; color:var(--dark);">歷史存檔明細表</span><button onclick="window.clearHistory()" style="background:var(--danger); color:white; border:none; padding:5px 12px; border-radius:4px; cursor:pointer; font-size:12px; font-weight:bold;">🚫清空記錄</button></div>`;
+        if (!appData.history.length) { c.innerHTML = header + '<div style="padding:20px;color:#999;text-align:center;">暫無紀錄</div>'; return; }
+        let html = header + '<table style="width:100%; border-collapse: collapse; text-align:center;"><tr style="background:#f8f9fa;font-weight:bold;"><td style="padding:10px;">日期</td><td>營收</td><td>純利</td><td>詳情</td></tr>';
         appData.history.slice().reverse().forEach((h, i) => {
-            const realIdx = appData.history.length - 1 - i;
-            tableHtml += `
-                <tr class="history-row" onclick="document.getElementById('det-${realIdx}').style.display = (document.getElementById('det-${realIdx}').style.display === 'block' ? 'none' : 'block')">
+            const rIdx = appData.history.length - 1 - i;
+            if(h.isClosed) {
+                html += `<tr class="history-row"><td>${h.date}</td><td colspan="2" style="color:#7f8c8d; font-weight:bold;">【 今日店休 】</td><td>-</td></tr>`;
+            } else {
+                html += `
+                <tr class="history-row" onclick="document.getElementById('det-${rIdx}').style.display = (document.getElementById('det-${rIdx}').style.display === 'block' ? 'none' : 'block')">
                     <td>${h.date}</td><td>$${Math.round(h.rev)}</td><td style="color:var(--success); font-weight:bold;">$${Math.round(h.net)}</td><td style="color:var(--accent);">▾</td>
                 </tr>
-                <tr>
-                    <td colspan="4" style="padding:0;"><div id="det-${realIdx}" class="details-pane">
-                        <div class="details-grid">
-                            <div><div style="font-weight:bold;margin-bottom:5px;">🍱 銷量詳情</div>${h.sales.map(s=>`<div>${s.name}: ${s.vol}份</div>`).join('')}</div>
-                            <div><div style="font-weight:bold;margin-bottom:5px;">💰 支出摘要</div>食材: $${Math.round(h.fCost)}<br>雜支: $${Math.round(h.oCost)}</div>
-                        </div>
-                    </div></td>
-                </tr>`;
+                <tr><td colspan="4" style="padding:0;"><div id="det-${rIdx}" class="details-pane"><div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;"><div><div style="font-weight:bold;margin-bottom:5px;">🍱 銷量詳情</div>${h.sales.map(s=>`<div>${s.name}: ${s.vol}份</div>`).join('')}</div><div><div style="font-weight:bold;margin-bottom:5px;">💰 支出摘要</div>食材: $${Math.round(h.fCost)}<br>雜支: $${Math.round(h.oCost)}</div></div></div></td></tr>`;
+            }
         });
-        tableHtml += '</table>';
-        c.innerHTML = historyHeader + tableHtml;
+        c.innerHTML = html + '</table>';
     }
 
-    window.clearHistory = () => {
-        if(confirm("⚠ 警告！這將永久刪除雲端所有的歷史紀錄且無法還原。\n確定要執行嗎？")) {
-            appData.history = [];
-            sync();
-            alert("歷史紀錄已成功清空。");
-        }
+    window.clearHistory = () => { if(confirm("⚠ 注意！這將永久刪除雲端所有紀錄。確定嗎？")) { appData.history = []; sync(); alert("已清空。"); } };
+    
+    let profitChart, salesChart;
+    function initCharts() {
+        profitChart = new Chart(document.getElementById('profitChart'), { type: 'doughnut', data: { labels: ['食材', '雜支', '純利'], datasets: [{ data: [0,0,0], backgroundColor: ['#e74c3c', '#9b59b6', '#27ae60'] }] }, options: { responsive: true, maintainAspectRatio: false } });
+        
+        salesChart = new Chart(document.getElementById('salesChart'), { 
+            type: 'bar', 
+            data: { labels: [], datasets: [{ data: [], backgroundColor: '#f39c12' }] }, 
+            options: { 
+                indexAxis: 'y', 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        ticks: {
+                            font: { size: 10 },
+                            autoSkip: false 
+                        }
+                    }
+                }
+            } 
+        });
+    }
+    
+    function updateCharts(s) {
+        profitChart.data.datasets[0].data = [s.fCost, s.oCost, Math.max(0, s.net)]; profitChart.update();
+        
+        const sorted = [...appData.products].filter(p => p.vol > 0).sort((a,b) => b.vol - a.vol);
+        salesChart.data.labels = sorted.map(p => p.name); 
+        salesChart.data.datasets[0].data = sorted.map(p => p.vol); 
+        salesChart.update();
+    }
+    
+    window.archiveMonth = () => {
+        if(!confirm("確定結算嗎？本月數據將歸零。")) return;
+        const s = calculateDash();
+        appData.history.push({ date: new Date().toLocaleDateString(), rev: s.rev, fCost: s.fCost, oCost: s.oCost, net: s.net, isClosed: false, sales: appData.products.filter(p => p.vol > 0).map(p => ({name: p.name, vol: p.vol})) });
+        appData.products.forEach(p => p.vol = 0);
+        ['food', 'other'].forEach(t => { for(let n in appData.costs[t]) appData.costs[t][n] = [{date:"", price:0, qty:0}]; });
+        sync(); alert("結算成功！");
     };
 
-    const datePicker = document.getElementById('daily-date-picker');
-    if(datePicker) datePicker.value = new Date().toISOString().split('T')[0];
-    
-    window.onload = () => { 
-        initCharts(); 
-        renderAll(); 
+    window.onload = () => {
+        const dp = document.getElementById('daily-date-picker');
+        if(dp) dp.value = new Date().toISOString().split('T')[0];
+        initCharts(); renderAll();
     };
 </script>
 </body>
