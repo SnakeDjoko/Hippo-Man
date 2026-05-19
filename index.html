@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hippoman 炒飯雲端管理系統 2.7</title>
+    <title>Hippoman 炒飯雲端管理系統 2.8</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
@@ -33,37 +33,43 @@
         .chart-box { flex: 1; min-width: 300px; background: white; padding: 15px; border-radius: 12px; border: 1px solid var(--border); max-height: 280px; display: flex; flex-direction: column; align-items: center; }
         canvas { width: 100% !important; max-height: 200px !important; }
 
-        /* Calendar Styles (開啟容器查詢以實現無級別自適應大小) */
+        /* Calendar Styles */
         .calendar-box { margin-bottom: 25px; }
         .calendar-header { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: bold; background: #eee; padding: 12px 0; border-radius: 8px 8px 0 0; font-size: 14px; color: var(--dark); }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); border-left: 1px solid var(--border); border-top: 1px solid var(--border); background: white; }
         
-        /* 讓每個格子成為獨立的容器容器，追蹤寬度變化 */
+        /* 每個日曆格子宣告為 inline-size 容器，全面啟用自適應縮放 */
         .cal-day { height: 115px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 6px; position: relative; container-type: inline-size; }
         
-        /* 日期數字靠左上角 */
+        /* 日期數字固定左上角 */
         .cal-day .date-num { color: #555; font-size: 16px; position: absolute; top: 8px; left: 10px; font-family: "Helvetica Neue", Arial, sans-serif; font-weight: bold; }
         
-        /* 營業數據定位在右下角（嚴格貼齊，不留過大空隙防止超出） */
-        .cal-day .data-wrapper { display: flex; flex-direction: column; align-items: flex-end; position: absolute; bottom: 4px; right: 6px; line-height: 1.15; letter-spacing: 0.3px; width: 85%; max-height: 60%; justify-content: flex-end; }
+        /* 營業數據外層容器：限制最大寬度 90%，確保絕對不超出左右邊線，緊貼右下角 */
+        .cal-day .data-wrapper { display: flex; flex-direction: column; align-items: flex-end; justify-content: flex-end; position: absolute; bottom: 6px; right: 8px; max-width: 90%; overflow: hidden; line-height: 1.15; letter-spacing: 0.3px; }
         
-        /* 電腦版基準大小 (寬格子) */
-        .cal-day .rev-val, .cal-day .cost-val { font-weight: bold; font-size: 24px; white-space: nowrap; display: inline-block; }
+        /* 不分裝置，全部由 Container Queries 控制字體大小 */
+        .cal-day .rev-val, .cal-day .cost-val { font-weight: bold; white-space: nowrap; text-align: right; width: 100%; display: block; }
         .cal-day .rev-val { color: #2ecc71; } 
         .cal-day .cost-val { color: #e74c3c; } 
-        
-        /* 💡 核心自適應：當格子寬度小於 100px (手機版) 時，字體自動等比例縮小，絕不爆格 */
-        @container (max-width: 110px) {
-            .cal-day .rev-val, .cal-day .cost-val { font-size: 18px; }
+
+        /* 🚀 全端通用：依據格子實際寬度（cqw）自動精密調整字體大小，完美對齊不爆格 */
+        @container (min-width: 140px) {
+            .cal-day .rev-val, .cal-day .cost-val { font-size: 24px; }
         }
-        @container (max-width: 85px) {
-            .cal-day .rev-val, .cal-day .cost-val { font-size: 14px; }
+        @container (max-width: 139px) and (min-width: 110px) {
+            .cal-day .rev-val, .cal-day .cost-val { font-size: 20px; }
+        }
+        @container (max-width: 109px) and (min-width: 85px) {
+            .cal-day .rev-val, .cal-day .cost-val { font-size: 15px; }
+        }
+        @container (max-width: 84px) and (min-width: 66px) {
+            .cal-day .rev-val, .cal-day .cost-val { font-size: 12px; }
         }
         @container (max-width: 65px) {
-            .cal-day .rev-val, .cal-day .cost-val { font-size: 11px; }
+            .cal-day .rev-val, .cal-day .cost-val { font-size: 10px; }
         }
         
-        /* 店休「休」字置中特大號 (向右歪 6 度) */
+        /* 店休「休」字置中（右歪 6 度） */
         .cal-day .closed-tag { position: absolute; top: 52%; left: 55%; transform: translate(-50%, -50%) rotate(6deg); font-weight: 800; color: #34495e; font-size: 48px; font-family: "BiauKai", "DFKai-SB", "標楷體", serif; text-shadow: 2px 2px 3px rgba(0,0,0,0.1); letter-spacing: 1px; }
         
         .cal-day.today { background: #fff9e6; border: 2px solid var(--primary); z-index: 2; }
@@ -89,7 +95,7 @@
         .history-row { cursor: pointer; border-bottom: 1px solid var(--border); }
         .details-pane { display: none; background: #fdfdfd; padding: 15px; border-bottom: 2px solid var(--primary); }
 
-        /* 📱 移動端佈局微調 */
+        /* 📱 移動端佈局結構微調 */
         @media (max-width: 768px) {
             body { flex-direction: column; }
             .mobile-header { display: flex; }
@@ -97,7 +103,7 @@
             .sidebar.show { transform: translateX(0); }
             .main-content { padding: 70px 15px 20px 15px; }
             
-            /* 手機版格子稍微加高至 110px 給數據安全感，但字體會透過上方 @container 自動縮小 */
+            /* 手機版格子高度固定 110px，裡面的資料會透過上面的 @container 自動縮放到完美大小 */
             .cal-day { height: 110px; }
             .cal-day .closed-tag { font-size: 38px; }
         }
@@ -111,7 +117,7 @@
 </div>
 
 <div class="sidebar" id="sidebar">
-    <div class="sidebar-header">Hippoman 2.7</div>
+    <div class="sidebar-header">Hippoman 2.8</div>
     <div class="nav-group">數據分析</div>
     <button class="nav-btn active" onclick="showPage('dash-page', this)">📊 營運分析總表</button>
     <button class="nav-btn" onclick="showPage('daily-page', this)">✍️ 今日銷量輸入</button>
