@@ -33,28 +33,17 @@
         .chart-box { flex: 1; min-width: 300px; background: white; padding: 15px; border-radius: 12px; border: 1px solid var(--border); max-height: 280px; display: flex; flex-direction: column; align-items: center; }
         canvas { width: 100% !important; max-height: 200px !important; }
 
-        /* Calendar Styles */
+        /* 月曆樣式控制：維持完美的彈性排版與防蓋日期設定 */
         .calendar-box { margin-bottom: 25px; }
         .calendar-header { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: bold; background: #eee; padding: 12px 0; border-radius: 8px 8px 0 0; font-size: 14px; color: var(--dark); }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); border-left: 1px solid var(--border); border-top: 1px solid var(--border); background: white; }
-        
-        /* 💡 改用 Flex 直向排版，讓日期在最上方、數據在最下方，絕對不會重疊互相覆蓋 */
         .cal-day { height: 115px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 6px; display: flex; flex-direction: column; justify-content: space-between; position: relative; container-type: inline-size; }
-        
-        /* 日期區塊 */
         .cal-day .date-num { color: #555; font-size: 15px; font-family: "Helvetica Neue", Arial, sans-serif; font-weight: bold; text-align: left; align-self: flex-start; }
-        
-        /* 營業數據包裹層：寬度撐滿，限制最高只能佔格子的 70%，超過會隱藏，確保絕對不往上蓋到日期 */
-        .cal-day .data-wrapper { display: flex; flex-direction: column; align-items: flex-end; justify-content: flex-end; width: 100%; max-height: 70%; line-height: 1.1; overflow: hidden; }
-        
-        /* 🚀 使用 clamp() 搭配 cqw，讓字體隨格子寬度流暢無級別放大填滿，但限制最寬/最窄的極限安全值 */
-        .cal-day .rev-val, .cal-day .cost-val { font-weight: bold; white-space: nowrap; text-align: right; width: 100%; font-size: clamp(10px, 20cqw, 46px); }
+        .cal-day .data-wrapper { display: flex; flex-direction: column; align-items: flex-end; justify-content: flex-end; width: 100%; max-height: 60%; line-height: 1.1; overflow: hidden; }
+        .cal-day .rev-val, .cal-day .cost-val { font-weight: bold; white-space: nowrap; text-align: right; width: 100%; font-size: clamp(10px, 16.5cqw, 23px); }
         .cal-day .rev-val { color: #2ecc71; } 
         .cal-day .cost-val { color: #e74c3c; } 
-        
-        /* 店休「休」字置中（右歪 6 度） */
         .cal-day .closed-tag { position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%) rotate(6deg); font-weight: 800; color: #34495e; font-size: clamp(30px, 35cqw, 46px); font-family: "BiauKai", "DFKai-SB", "標楷體", serif; text-shadow: 2px 2px 3px rgba(0,0,0,0.1); }
-        
         .cal-day.today { background: #fff9e6; border: 2px solid var(--primary); z-index: 2; }
         .cal-day.empty { background: #fafafa; }
 
@@ -63,7 +52,6 @@
         .grid-header { font-weight: bold; padding: 8px; background: #f8f9fa; font-size: 12px; border-radius: 4px; border-bottom: 1px solid var(--border); }
         .grid-row { margin-top: 8px; }
         .text-center { text-align: center; }
-        
         .category-divider { background: #fdf2e2; padding: 8px 15px; margin: 20px 0 10px 0; border-radius: 6px; font-size: 14px; font-weight: bold; color: #d35400; text-align: left; border-left: 5px solid var(--primary); }
 
         input { padding: 10px 5px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; text-align: center; width: 100%; }
@@ -78,15 +66,12 @@
         .history-row { cursor: pointer; border-bottom: 1px solid var(--border); }
         .details-pane { display: none; background: #fdfdfd; padding: 15px; border-bottom: 2px solid var(--primary); }
 
-        /* 📱 移動端佈局結構微調 */
         @media (max-width: 768px) {
             body { flex-direction: column; }
             .mobile-header { display: flex; }
             .sidebar { position: fixed; top: 50px; left: 0; height: calc(100vh - 50px); transform: translateX(-100%); width: 80%; }
             .sidebar.show { transform: translateX(0); }
             .main-content { padding: 70px 15px 20px 15px; }
-            
-            /* 手機版格子稍微加高至 110px，裡面的內容一樣會完美靠上下兩側分離縮放 */
             .cal-day { height: 110px; }
         }
     </style>
@@ -203,6 +188,7 @@
         });
     }
 
+    // 恢復直接監聽：一打開網頁就自動抓取最新雲端數據
     onSnapshot(docRef, (snap) => {
         if (snap.exists()) {
             appData = snap.data();
@@ -382,30 +368,11 @@
     let profitChart, salesChart;
     function initCharts() {
         profitChart = new Chart(document.getElementById('profitChart'), { type: 'doughnut', data: { labels: ['食材', '雜支', '純利'], datasets: [{ data: [0,0,0], backgroundColor: ['#e74c3c', '#9b59b6', '#27ae60'] }] }, options: { responsive: true, maintainAspectRatio: false } });
-        
-        salesChart = new Chart(document.getElementById('salesChart'), { 
-            type: 'bar', 
-            data: { labels: [], datasets: [{ data: [], backgroundColor: '#f39c12' }] }, 
-            options: { 
-                indexAxis: 'y', 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: {
-                        ticks: {
-                            font: { size: 10 },
-                            autoSkip: false 
-                        }
-                    }
-                }
-            } 
-        });
+        salesChart = new Chart(document.getElementById('salesChart'), { type: 'bar', data: { labels: [], datasets: [{ data: [], backgroundColor: '#f39c12' }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { font: { size: 10 }, autoSkip: false } } } } });
     }
     
     function updateCharts(s) {
         profitChart.data.datasets[0].data = [s.fCost, s.oCost, Math.max(0, s.net)]; profitChart.update();
-        
         const sorted = [...appData.products].filter(p => p.vol > 0).sort((a,b) => b.vol - a.vol);
         salesChart.data.labels = sorted.map(p => p.name); 
         salesChart.data.datasets[0].data = sorted.map(p => p.vol); 
@@ -424,7 +391,7 @@
     window.onload = () => {
         const dp = document.getElementById('daily-date-picker');
         if(dp) dp.value = new Date().toISOString().split('T')[0];
-        initCharts(); renderAll();
+        initCharts();
     };
 </script>
 </body>
