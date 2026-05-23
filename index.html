@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hippoman 炒飯雲端管理系統 3.1.4</title>
+    <title>Hippoman 炒飯雲端管理系統 3.1.7</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
@@ -55,10 +55,13 @@
         .sales-grid { grid-template-columns: 2fr 1fr 1fr 1.2fr; min-width: 450px; }
         .setting-grid { grid-template-columns: 2fr 1fr 1fr; min-width: 450px; }
         .cost-grid { grid-template-columns: 1.4fr 1.2fr 1fr 1fr 1fr 2fr 0.4fr; min-width: 700px; }
-        .shop-grid { grid-template-columns: 1.4fr 1.5fr 1.2fr 1.2fr 2.5fr 0.4fr; min-width: 700px; }
+        .shop-grid { grid-template-columns: 1.4fr 1.5fr 1.5fr 2.5fr 0.4fr; min-width: 600px; }
 
         input, select { padding: 10px 5px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; text-align: center; width: 100%; height: 38px; }
         select { text-align-last: center; background: white; cursor: pointer; }
+        
+        /* 唯讀/鎖定欄位樣式 */
+        input:disabled, select:disabled { background-color: #f1f2f6 !important; color: #718093 !important; cursor: not-allowed; border: 1px solid #dcdde1; }
 
         .btn-main { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; font-size: 14px; }
         .btn-rest { background: #95a5a6; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; }
@@ -68,9 +71,10 @@
         .history-row { cursor: pointer; border-bottom: 1px solid var(--border); }
         .details-pane { display: none; background: #fdfdfd; padding: 15px; border-bottom: 2px solid var(--primary); }
 
-        /* 標題加大加粗優化區 */
-        .section-title { font-size: 20px; font-weight: 800; color: var(--dark); margin: 35px 0 15px 0; padding-left: 12px; border-left: 6px solid var(--accent); line-height: 1.2; }
-        
+        /* 標題加大加粗區 */
+        .section-title { font-size: 20px; font-weight: 800; color: var(--dark); margin: 15px 0 15px 0; padding-left: 12px; border-left: 6px solid var(--accent); line-height: 1.2; }
+        .sub-block-title { font-size: 13px; font-weight: bold; color: #7f8c8d; margin: 15px 0 5px 2px; text-align: left; }
+
         /* 管理器 */
         .item-manager-wrapper { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 15px; }
         .item-manager { flex: 1; min-width: 240px; display: flex; gap: 8px; background: #ebf5fb; padding: 8px 12px; border-radius: 8px; align-items: center; }
@@ -78,6 +82,10 @@
         .item-manager input, .item-manager select { flex: 1; text-align: left; padding-left: 10px; height: 34px; }
         .item-manager select { text-align-last: left; }
         .item-manager button { height: 34px; padding: 0 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; font-size: 13px; white-space: nowrap; }
+
+        /* 專用輸入區面板外觀 */
+        .input-row-box { background: #f0f7fc !important; padding: 8px; border-radius: 6px; border: 1px dashed var(--accent); margin-bottom: 10px; }
+        .input-row-box.shop-box { background: #eafaf1 !important; border-dashed-color: var(--success); }
 
         @media (max-width: 768px) {
             body { flex-direction: column; }
@@ -97,13 +105,14 @@
 </div>
 
 <div class="sidebar" id="sidebar">
-    <div class="sidebar-header">Hippoman 3.1.4</div>
+    <div class="sidebar-header">Hippoman 3.1.7</div>
     <div class="nav-group">數據分析</div>
     <button class="nav-btn active" onclick="showPage('dash-page', this)">📊 營運分析總表</button>
     <button class="nav-btn" onclick="showPage('daily-page', this)">✍️ 今日銷量輸入</button>
     <div class="nav-group">成本與設定</div>
     <button class="nav-btn" onclick="showPage('product-page', this)">🍱 品項定價設定</button>
-    <button class="nav-btn" onclick="showPage('purchase-page', this)">🛒 採購紀錄</button>
+    <button class="nav-btn" onclick="showPage('purchase-page', this)">🛒 單品採購明細</button>
+    <button class="nav-btn" onclick="showPage('shop-page', this)">🏪 店家總帳紀錄</button>
     <button class="nav-btn" onclick="showPage('food-page', this)">🥬 食材採購明細</button>
     <button class="nav-btn" onclick="showPage('other-page', this)">📦 雜支帳單明細</button>
     <div class="nav-group">存檔</div>
@@ -152,8 +161,7 @@
     </div>
 
     <div id="purchase-page" class="page">
-        <h2>🛒 採購紀錄管理</h2>
-        
+        <h2>🛒 單品採購明細管理</h2>
         <div class="section-title" style="border-left-color: var(--accent);">單品採購明細</div>
         
         <div class="item-manager-wrapper">
@@ -170,14 +178,28 @@
         </div>
 
         <div class="card">
+            <div class="sub-block-title">✍️ 新增輸入列</div>
+            <div class="grid-row cost-grid input-row-box">
+                <input type="date" id="input-item-date">
+                <select id="input-item-select"><option value="">--請選擇--</option></select>
+                <input type="number" id="input-item-price" placeholder="單價" value="0">
+                <input type="number" id="input-item-qty" placeholder="數量" value="0">
+                <div style="text-align:center; font-weight:bold; color:var(--accent);" id="input-item-subtotal">$ 0</div>
+                <input type="text" id="input-item-note" placeholder="備註" style="text-align:left; padding-left:8px;">
+                <div></div>
+            </div>
+            <button class="btn-main" style="padding:10px; margin-bottom:20px; font-size:13px; background:var(--accent);" onclick="window.commitPurchase('items')">💾 儲存單品明細</button>
+
+            <div class="sub-block-title">🔒 已儲存資訊紀錄</div>
             <div class="grid-header cost-grid">
                 <div>日期</div><div>品項</div><div>單價</div><div>數量</div><div>小計</div><div>備註</div><div></div>
             </div>
             <div id="purchase-items-list"></div>
-            <button class="btn-main" style="padding:10px; margin-top:15px; font-size:13px; background:var(--accent);" onclick="window.addPurchaseRow('items')">+ 新增單品明細</button>
         </div>
+    </div>
 
-
+    <div id="shop-page" class="page">
+        <h2>🏪 店家總帳紀錄管理</h2>
         <div class="section-title" style="border-left-color: var(--success);">店家總帳紀錄</div>
         
         <div class="item-manager-wrapper">
@@ -194,11 +216,21 @@
         </div>
 
         <div class="card">
+            <div class="sub-block-title">✍️ 新增輸入列</div>
+            <div class="grid-row shop-grid input-row-box shop-box">
+                <input type="date" id="input-shop-date">
+                <select id="input-shop-select"><option value="">--請選擇店家--</option></select>
+                <input type="number" id="input-shop-total" placeholder="總價" value="0">
+                <input type="text" id="input-shop-note" placeholder="備註" style="text-align:left; padding-left:8px;">
+                <div></div>
+            </div>
+            <button class="btn-main" style="padding:10px; margin-bottom:20px; font-size:13px; background:var(--success);" onclick="window.commitPurchase('shops')">💾 儲存店家總帳</button>
+
+            <div class="sub-block-title">🔒 已儲存資訊紀錄</div>
             <div class="grid-header shop-grid">
-                <div>日期</div><div>店家</div><div>總價</div><div>小計</div><div>備註</div><div></div>
+                <div>日期</div><div>店家</div><div>總價</div><div>備註</div><div></div>
             </div>
             <div id="purchase-shops-list"></div>
-            <button class="btn-main" style="padding:10px; margin-top:15px; font-size:13px; background:var(--success);" onclick="window.addPurchaseRow('shops')">+ 新增店家總帳</button>
         </div>
     </div>
 
@@ -333,6 +365,7 @@
         renderHistory();
         renderCalendar();
         renderManagerSelects();
+        renderInputDropdowns();
         const s = calculateDash();
         if(profitChart) updateCharts(s);
     }
@@ -351,6 +384,27 @@
         if (shopSel) {
             const cur = shopSel.value;
             shopSel.innerHTML = '<option value="">--選擇店家--</option>';
+            appData.shopOptions.forEach(opt => {
+                const o = document.createElement('option'); o.value = opt; o.innerText = opt;
+                if(opt === cur) o.selected = true; shopSel.appendChild(o);
+            });
+        }
+    }
+
+    function renderInputDropdowns() {
+        const itemSel = document.getElementById('input-item-select');
+        if (itemSel) {
+            const cur = itemSel.value;
+            itemSel.innerHTML = '<option value="">--請選擇--</option>';
+            appData.purchaseOptions.forEach(opt => {
+                const o = document.createElement('option'); o.value = opt; o.innerText = opt;
+                if(opt === cur) o.selected = true; itemSel.appendChild(o);
+            });
+        }
+        const shopSel = document.getElementById('input-shop-select');
+        if (shopSel) {
+            const cur = shopSel.value;
+            shopSel.innerHTML = '<option value="">--請選擇店家--</option>';
             appData.shopOptions.forEach(opt => {
                 const o = document.createElement('option'); o.value = opt; o.innerText = opt;
                 if(opt === cur) o.selected = true; shopSel.appendChild(o);
@@ -430,61 +484,103 @@
     window.delRow = (t, n, i) => { appData.costs[t][n].splice(i, 1); sync(); };
     window.updateRecord = (t, n, i, k, v) => { appData.costs[t][n][i][k] = (k==='date'?v:parseFloat(v)||0); sync(); };
 
+    // 渲染「🔒 已儲存資訊紀錄」區塊 (核心改造：店家總帳備註同步鎖定)
     function renderPurchasePage() {
         const itemsList = document.getElementById('purchase-items-list');
         const shopsList = document.getElementById('purchase-shops-list');
-        if (!itemsList || !shopsList) return;
 
-        // 單品採購明細
-        itemsList.innerHTML = '';
-        appData.purchases.items.forEach((r, idx) => {
-            const row = document.createElement('div'); row.className = 'grid-row cost-grid';
-            let optionsHtml = appData.purchaseOptions.map(opt => `<option value="${opt}" ${r.item === opt ? 'selected' : ''}>${opt}</option>`).join('');
-            row.innerHTML = `
-                <input type="date" value="${r.date}" onchange="window.updatePurchase('items',${idx},'date',this.value)">
-                <select onchange="window.updatePurchase('items',${idx},'item',this.value)"><option value="">--請選擇--</option>${optionsHtml}</select>
-                <input type="number" value="${r.price}" onchange="window.updatePurchase('items',${idx},'price',this.value)">
-                <input type="number" value="${r.qty}" onchange="window.updatePurchase('items',${idx},'qty',this.value)">
-                <div style="text-align:center; font-weight:bold;">$${Math.round(r.price * r.qty)}</div>
-                <input type="text" placeholder="備註" value="${r.note || ''}" style="text-align:left; padding-left:8px;" onchange="window.updatePurchase('items',${idx},'note',this.value)">
-                <button class="btn-del" onclick="window.delPurchaseRow('items',${idx})">×</button>
-            `;
-            itemsList.appendChild(row);
-        });
+        // 1. 單品採購歷史明細 (可個別渲染於該分頁)
+        if (itemsList) {
+            itemsList.innerHTML = '';
+            if (appData.purchases.items.length === 0) {
+                itemsList.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:15px; color:#aaa; font-size:13px;">暫無儲存明細</div>';
+            } else {
+                appData.purchases.items.forEach((r, idx) => {
+                    const row = document.createElement('div'); row.className = 'grid-row cost-grid';
+                    let optionsHtml = appData.purchaseOptions.map(opt => `<option value="${opt}" ${r.item === opt ? 'selected' : ''}>${opt}</option>`).join('');
+                    row.innerHTML = `
+                        <input type="date" value="${r.date}" disabled>
+                        <select disabled><option value="">--請選擇--</option>${optionsHtml}</select>
+                        <input type="number" value="${r.price}" disabled>
+                        <input type="number" value="${r.qty}" disabled>
+                        <div style="text-align:center; font-weight:bold; color:#7f8c8d;">$${Math.round(r.price * r.qty)}</div>
+                        <input type="text" placeholder="備註" value="${r.note || ''}" style="text-align:left; padding-left:8px;" onchange="window.updatePurchase('items',${idx},'note',this.value)">
+                        <button class="btn-del" onclick="window.delPurchaseRow('items',${idx})">×</button>
+                    `;
+                    itemsList.appendChild(row);
+                });
+            }
+        }
 
-        // 店家總帳紀錄
-        shopsList.innerHTML = '';
-        appData.purchases.shops.forEach((r, idx) => {
-            const row = document.createElement('div'); row.className = 'grid-row shop-grid';
-            let shopOptionsHtml = appData.shopOptions.map(opt => `<option value="${opt}" ${r.shop === opt ? 'selected' : ''}>${opt}</option>`).join('');
-            row.innerHTML = `
-                <input type="date" value="${r.date}" onchange="window.updatePurchase('shops',${idx},'date',this.value)">
-                <select onchange="window.updatePurchase('shops',${idx},'shop',this.value)"><option value="">--請選擇店家--</option>${shopOptionsHtml}</select>
-                <input type="number" value="${r.total}" onchange="window.updatePurchase('shops',${idx},'total',this.value)">
-                <input type="number" value="${r.subtotal}" onchange="window.updatePurchase('shops',${idx},'subtotal',this.value)">
-                <input type="text" placeholder="備註" value="${r.note || ''}" style="text-align:left; padding-left:8px;" onchange="window.updatePurchase('shops',${idx},'note',this.value)">
-                <button class="btn-del" onclick="window.delPurchaseRow('shops',${idx})">×</button>
-            `;
-            shopsList.appendChild(row);
-        });
+        // 2. 店家總帳歷史明細 (包含備註欄全面鎖定 disabled)
+        if (shopsList) {
+            shopsList.innerHTML = '';
+            if (appData.purchases.shops.length === 0) {
+                shopsList.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:15px; color:#aaa; font-size:13px;">暫無儲存總帳</div>';
+            } else {
+                appData.purchases.shops.forEach((r, idx) => {
+                    const row = document.createElement('div'); row.className = 'grid-row shop-grid';
+                    let shopOptionsHtml = appData.shopOptions.map(opt => `<option value="${opt}" ${r.shop === opt ? 'selected' : ''}>${opt}</option>`).join('');
+                    row.innerHTML = `
+                        <input type="date" value="${r.date}" disabled>
+                        <select disabled><option value="">--請選擇店家--</option>${shopOptionsHtml}</select>
+                        <input type="number" value="${r.total}" disabled>
+                        <input type="text" placeholder="無備註" value="${r.note || ''}" style="text-align:left; padding-left:8px;" disabled>
+                        <button class="btn-del" onclick="window.delPurchaseRow('shops',${idx})">×</button>
+                    `;
+                    shopsList.appendChild(row);
+                });
+            }
+        }
     }
 
-    window.addPurchaseRow = (type) => {
-        const today = new Date().toISOString().split('T')[0];
+    window.commitPurchase = (type) => {
         if (type === 'items') {
-            appData.purchases.items.push({date: today, item: '', price: 0, qty: 0, note: ''});
+            const date = document.getElementById('input-item-date').value;
+            const item = document.getElementById('input-item-select').value;
+            const price = parseFloat(document.getElementById('input-item-price').value) || 0;
+            const qty = parseFloat(document.getElementById('input-item-qty').value) || 0;
+            const note = document.getElementById('input-item-note').value.trim();
+
+            if (!item) { alert("請先選擇要採購的品項！"); return; }
+            if (price <= 0 || qty <= 0) { alert("單價與數量必須大於 0 哦！"); return; }
+
+            appData.purchases.items.push({ date, item, price, qty, note });
+            
+            document.getElementById('input-item-select').value = '';
+            document.getElementById('input-item-price').value = 0;
+            document.getElementById('input-item-qty').value = 0;
+            document.getElementById('input-item-note').value = '';
+            document.getElementById('input-item-subtotal').innerText = '$ 0';
         } else {
-            appData.purchases.shops.push({date: today, shop: '', total: 0, subtotal: 0, note: ''});
+            const date = document.getElementById('input-shop-date').value;
+            const shop = document.getElementById('input-shop-select').value;
+            const total = parseFloat(document.getElementById('input-shop-total').value) || 0;
+            const note = document.getElementById('input-shop-note').value.trim();
+
+            if (!shop) { alert("請選擇消費的店家！"); return; }
+            if (total <= 0) { alert("總價必須大於 0 哦！"); return; }
+
+            appData.purchases.shops.push({ date, shop, total, note });
+
+            document.getElementById('input-shop-select').value = '';
+            document.getElementById('input-shop-total').value = 0;
+            document.getElementById('input-shop-note').value = '';
         }
         sync();
     };
 
     window.updatePurchase = (type, idx, key, val) => {
-        appData.purchases[type][idx][key] = (key==='price'||key==='qty'||key==='total'||key==='subtotal') ? parseFloat(val)||0 : val;
+        appData.purchases[type][idx][key] = val;
         sync();
     };
 
-    window.delPurchaseRow = (type, idx) => { appData.purchases[type].splice(idx, 1); sync(); };
+    window.delPurchaseRow = (type, idx) => { 
+        if (confirm("確定要刪除這筆已儲存的紀錄嗎？")) {
+            appData.purchases[type].splice(idx, 1); 
+            sync(); 
+        }
+    };
 
     function calculateDash() {
         let rev = 0; appData.products.forEach(p => rev += (p.price * p.vol) * (1 - p.comm/100));
@@ -493,7 +589,7 @@
         
         if(appData.purchases) {
             appData.purchases.items.forEach(r => fCost += (r.price * r.qty));
-            appData.purchases.shops.forEach(r => oCost += r.subtotal);
+            appData.purchases.shops.forEach(r => oCost += r.total);
         }
 
         document.getElementById('dash-revenue').innerText = `$ ${Math.round(rev).toLocaleString()}`;
@@ -565,7 +661,22 @@
     }
 
     window.onload = () => {
-        const dp = document.getElementById('daily-date-picker'); if(dp) dp.value = new Date().toISOString().split('T')[0];
+        const todayStr = new Date().toISOString().split('T')[0];
+        
+        const dp = document.getElementById('daily-date-picker'); if(dp) dp.value = todayStr;
+        const itemDp = document.getElementById('input-item-date'); if(itemDp) itemDp.value = todayStr;
+        const shopDp = document.getElementById('input-shop-date'); if(shopDp) shopDp.value = todayStr;
+        
+        const calcSubtotal = () => {
+            const p = parseFloat(document.getElementById('input-item-price').value) || 0;
+            const q = parseFloat(document.getElementById('input-item-qty').value) || 0;
+            document.getElementById('input-item-subtotal').innerText = `$ ${Math.round(p * q).toLocaleString()}`;
+        };
+        const priceInput = document.getElementById('input-item-price');
+        const qtyInput = document.getElementById('input-item-qty');
+        if(priceInput) priceInput.addEventListener('input', calcSubtotal);
+        if(qtyInput) qtyInput.addEventListener('input', calcSubtotal);
+
         initCharts();
     };
 </script>
