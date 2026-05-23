@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hippoman 炒飯雲端管理系統 3.1.7</title>
+    <title>河馬Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
@@ -49,11 +49,19 @@
         /* 表格排版 */
         .grid-header { font-weight: bold; padding: 10px; background: #f8f9fa; font-size: 13px; border-radius: 4px; border-bottom: 1px solid var(--border); display: grid; gap: 5px; text-align: center; align-items: center; }
         .grid-row { display: grid; gap: 5px; align-items: center; margin-top: 8px; }
-        .category-divider { background: #fdf2e2; padding: 8px 15px; margin: 20px 0 10px 0; border-radius: 6px; font-size: 14px; font-weight: bold; color: #d35400; text-align: left; border-left: 5px solid var(--primary); }
         
+        .category-header-wrapper { display: flex; justify-content: space-between; align-items: center; background: #fdf2e2; padding: 6px 12px; margin: 20px 0 10px 0; border-radius: 6px; border-left: 5px solid var(--primary); }
+        .category-divider-title { font-size: 14px; font-weight: bold; color: #d35400; }
+        .category-actions { display: flex; gap: 6px; }
+        .btn-cat-action { padding: 4px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; color: white; transition: 0.2s; }
+        .btn-cat-action.add { background: var(--accent); }
+        .btn-cat-action.add:hover { background: #2980b9; }
+        .btn-cat-action.del { background: var(--danger); }
+        .btn-cat-action.del:hover { background: #c0392b; }
+
         /* 欄位寬度配置 */
         .sales-grid { grid-template-columns: 2fr 1fr 1fr 1.2fr; min-width: 450px; }
-        .setting-grid { grid-template-columns: 2fr 1fr 1fr; min-width: 450px; }
+        .setting-grid { grid-template-columns: 2fr 1fr 1fr 0.3fr; min-width: 450px; }
         .cost-grid { grid-template-columns: 1.4fr 1.2fr 1fr 1fr 1fr 2fr 0.4fr; min-width: 700px; }
         .shop-grid { grid-template-columns: 1.4fr 1.5fr 1.5fr 2.5fr 0.4fr; min-width: 600px; }
 
@@ -61,7 +69,7 @@
         select { text-align-last: center; background: white; cursor: pointer; }
         
         /* 唯讀/鎖定欄位樣式 */
-        input:disabled, select:disabled { background-color: #f1f2f6 !important; color: #718093 !important; cursor: not-allowed; border: 1px solid #dcdde1; }
+        input:disabled, select:disabled { background-color: #e9ecef !important; color: #333333 !important; font-weight: 500; cursor: not-allowed; border: 1px solid #ced4da; opacity: 1; -webkit-text-fill-color: #333333; }
 
         .btn-main { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; font-size: 14px; }
         .btn-rest { background: #95a5a6; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; }
@@ -100,12 +108,12 @@
 <body>
 
 <div class="mobile-header">
-    <div style="font-weight:bold; color:var(--primary);">炒飯雲端管理</div>
+    <div style="font-weight:bold; color:var(--primary);">河馬職人炒飯</div>
     <button onclick="toggleMenu()" style="background:none; border:1px solid #7f8c8d; color:white; border-radius:4px; padding:5px 10px;">選單 ☰</button>
 </div>
 
 <div class="sidebar" id="sidebar">
-    <div class="sidebar-header">Hippoman 3.1.7</div>
+    <div class="sidebar-header">河馬職人炒飯</div>
     <div class="nav-group">數據分析</div>
     <button class="nav-btn active" onclick="showPage('dash-page', this)">📊 營運分析總表</button>
     <button class="nav-btn" onclick="showPage('daily-page', this)">✍️ 今日銷量輸入</button>
@@ -113,15 +121,13 @@
     <button class="nav-btn" onclick="showPage('product-page', this)">🍱 品項定價設定</button>
     <button class="nav-btn" onclick="showPage('purchase-page', this)">🛒 單品採購明細</button>
     <button class="nav-btn" onclick="showPage('shop-page', this)">🏪 店家總帳紀錄</button>
-    <button class="nav-btn" onclick="showPage('food-page', this)">🥬 食材採購明細</button>
-    <button class="nav-btn" onclick="showPage('other-page', this)">📦 雜支帳單明細</button>
     <div class="nav-group">存檔</div>
     <button class="nav-btn" onclick="showPage('history-page', this)">📜 歷史結算紀錄</button>
 </div>
 
 <div class="main-content">
     <div id="dash-page" class="page active">
-        <h2>本月經營分析 (雲端同步)</h2>
+        <h2>本月經營分析 (雲端同步) 3.2.0</h2>
         <div class="dashboard-grid">
             <div class="stat-card"><div>實領營收</div><div id="dash-revenue" class="stat-value">$ 0</div></div>
             <div class="stat-card"><div>預計支出</div><div id="dash-cost" class="stat-value" style="color:var(--danger)">$ 0</div></div>
@@ -144,9 +150,6 @@
                 </div>
                 <button class="btn-rest" onclick="window.shopClosed()">🚫 今日店休</button>
             </div>
-            <div class="grid-header sales-grid">
-                <div>品項名稱</div><div>今日份數</div><div>售價</div><div>本月累計</div>
-            </div>
             <div id="daily-list"></div>
             <button class="btn-main" style="margin-top:20px;" onclick="window.saveDaily()">💾 確認存檔並同步</button>
         </div>
@@ -154,10 +157,7 @@
 
     <div id="product-page" class="page">
         <h2>🍱 品項定價設定</h2>
-        <div class="card">
-            <div class="grid-header setting-grid"><div>品項名稱</div><div>售價</div><div>抽成 %</div></div>
-            <div id="product-settings-list"></div>
-        </div>
+        <div class="card" id="product-settings-container" style="background: transparent; border: none; box-shadow: none; padding: 0;"></div>
     </div>
 
     <div id="purchase-page" class="page">
@@ -234,16 +234,6 @@
         </div>
     </div>
 
-    <div id="food-page" class="page">
-        <h2>🥬 食材採購明細</h2>
-        <div id="food-container"></div>
-    </div>
-
-    <div id="other-page" class="page">
-        <h2>📦 雜支帳單明細</h2>
-        <div id="other-container"></div>
-    </div>
-
     <div id="history-page" class="page">
         <h2>📜 歷史結算紀錄</h2>
         <div class="card calendar-box">
@@ -277,7 +267,7 @@
     const DEFAULT_SHOP_OPTIONS = ["好市多", "家樂福", "全聯", "傳統市場", "大潤發", "蝦皮購物", "瓦斯行"];
 
     let appData = { 
-        products: [], costs: { food: {}, other: {} }, history: [], 
+        products: [], history: [], 
         purchases: { items: [], shops: [] }, 
         purchaseOptions: DEFAULT_PURCHASE_OPTIONS,
         shopOptions: DEFAULT_SHOP_OPTIONS 
@@ -285,7 +275,6 @@
 
     function ensureStructure() {
         if (!appData.products) appData.products = [];
-        if (!appData.costs) appData.costs = { food: {}, other: {} };
         if (!appData.history) appData.history = [];
         if (!appData.purchases) appData.purchases = { items: [], shops: [] };
         if (!appData.purchases.items) appData.purchases.items = [];
@@ -294,7 +283,7 @@
         if (!appData.shopOptions || appData.shopOptions.length === 0) appData.shopOptions = DEFAULT_SHOP_OPTIONS;
         
         Object.values(CATEGORIES).forEach(cat => {
-            const count = appData.products.filter(p => p.cat === cat && p.name === "").length;
+            const count = appData.products.filter(p => p.cat === cat).length;
             if(count < 2) {
                 for(let i=0; i<(2-count); i++) appData.products.push({name:"", price:0, comm:35, vol:0, cat:cat});
             }
@@ -356,11 +345,34 @@
         sync();
     };
 
+    window.addProductToCategory = (catName) => {
+        const name = prompt(`請輸入要在【${catName}】新增的品項名稱：`);
+        if (!name || !name.trim()) return;
+        if (appData.products.some(p => p.name === name.trim())) { alert("此品項名稱已存在囉！"); return; }
+        appData.products.push({ name: name.trim(), price: 0, comm: 35, vol: 0, cat: catName });
+        sync();
+    };
+
+    window.deleteProductFromCategory = (catName) => {
+        const catProducts = appData.products.filter(p => p.cat === catName && p.name !== "");
+        if (catProducts.length === 0) { alert("目前此分類沒有可刪除的自訂品項！"); return; }
+        
+        let msg = `請輸入您要刪除的【${catName}】品項完整名稱：\n\n可選品項：\n` + catProducts.map(p => `• ${p.name}`).join('\n');
+        const targetName = prompt(msg);
+        if (!targetName) return;
+
+        const targetIndex = appData.products.findIndex(p => p.cat === catName && p.name === targetName.trim());
+        if (targetIndex === -1) { alert("找不到該品項，請確認名稱是否正確！"); return; }
+        
+        if (confirm(`確定要刪除【${catName}】中的「${targetName}」嗎？`)) {
+            appData.products.splice(targetIndex, 1);
+            sync();
+        }
+    };
+
     function renderAll() {
         renderDaily();
         renderProductSettings();
-        renderProgressive('food', 'food-container');
-        renderProgressive('other', 'other-container');
         renderPurchasePage();
         renderHistory();
         renderCalendar();
@@ -415,15 +427,29 @@
     function renderDaily() {
         const c = document.getElementById('daily-list'); if(!c) return;
         c.innerHTML = ''; let curCat = "";
-        appData.products.filter(p => p.name !== "").forEach((p, i) => {
+        
+        let filteredProds = appData.products.filter(p => p.name !== "");
+        if (filteredProds.length === 0) {
+            c.innerHTML = '<div class="card" style="text-align:center; padding:20px; color:#aaa;">請先到「品項定價設定」設定產品名稱哦！</div>';
+            return;
+        }
+
+        let currentCard = null;
+        filteredProds.forEach((p) => {
             if (p.cat !== curCat) {
-                curCat = p.cat; const div = document.createElement('div');
-                div.className = 'category-divider'; div.innerText = curCat; c.appendChild(div);
+                curCat = p.cat;
+                currentCard = document.createElement('div');
+                currentCard.className = 'card';
+                currentCard.innerHTML = `
+                    <div class="category-header-wrapper" style="margin-top:0;"><div class="category-divider-title">${curCat}</div></div>
+                    <div class="grid-header sales-grid"><div>品項名稱</div><div>今日份數</div><div>售價</div><div>本月累計</div></div>
+                `;
+                c.appendChild(currentCard);
             }
             const actualIdx = appData.products.indexOf(p);
             const row = document.createElement('div'); row.className = 'grid-row sales-grid';
             row.innerHTML = `<div style="text-align:left; font-weight:bold; padding-left:5px;">${p.name}</div><input type="number" class="day-qty" data-index="${actualIdx}" value="0"><div style="text-align:center;">$${p.price}</div><div style="text-align:center; font-weight:bold; color:var(--accent);">${p.vol}</div>`;
-            c.appendChild(row);
+            currentCard.appendChild(row);
         });
     }
 
@@ -443,53 +469,50 @@
     };
 
     function renderProductSettings() {
-        const c = document.getElementById('product-settings-list'); if(!c) return;
-        c.innerHTML = ''; let curCat = "";
-        const sorted = [...appData.products].sort((a,b) => Object.values(CATEGORIES).indexOf(a.cat) - Object.values(CATEGORIES).indexOf(b.cat));
-        sorted.forEach(p => {
-            if (p.cat !== curCat) {
-                curCat = p.cat; const div = document.createElement('div');
-                div.className = 'category-divider'; div.innerText = curCat; c.appendChild(div);
-            }
-            const actualIdx = appData.products.indexOf(p);
-            const row = document.createElement('div'); row.className = 'grid-row setting-grid';
-            row.innerHTML = `<input type="text" placeholder="品項名稱" value="${p.name}" onchange="window.updateProd(${actualIdx},'name',this.value)"><input type="number" value="${p.price}" onchange="window.updateProd(${actualIdx},'price',this.value)"><input type="number" value="${p.comm}" onchange="window.updateProd(${actualIdx},'comm',this.value)">`;
-            c.appendChild(row);
+        const container = document.getElementById('product-settings-container'); if(!container) return;
+        container.innerHTML = '';
+        
+        Object.values(CATEGORIES).forEach(cat => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div class="category-header-wrapper" style="margin-top: 0;">
+                    <div class="category-divider-title">${cat}</div>
+                    <div class="category-actions">
+                        <button class="btn-cat-action add" onclick="window.addProductToCategory('${cat}')">➕ 新增品項</button>
+                        <button class="btn-cat-action del" onclick="window.deleteProductFromCategory('${cat}')">🗑️ 刪除品項</button>
+                    </div>
+                </div>
+                <div class="grid-header setting-grid">
+                    <div>品項名稱</div><div>售價</div><div>抽成 %</div><div></div>
+                </div>
+                <div id="settings-rows-${cat}"></div>
+            `;
+            container.appendChild(card);
+            
+            const rowsContainer = document.getElementById(`settings-rows-${cat}`);
+            const catProducts = appData.products.filter(p => p.cat === cat);
+            
+            catProducts.forEach(p => {
+                const actualIdx = appData.products.indexOf(p);
+                const row = document.createElement('div');
+                row.className = 'grid-row setting-grid';
+                row.innerHTML = `
+                    <input type="text" placeholder="(未命名)" value="${p.name}" onchange="window.updateProd(${actualIdx},'name',this.value)">
+                    <input type="number" value="${p.price}" onchange="window.updateProd(${actualIdx},'price',this.value)">
+                    <input type="number" value="${p.comm}" onchange="window.updateProd(${actualIdx},'comm',this.value)">
+                    <div></div>
+                `;
+                rowsContainer.appendChild(row);
+            });
         });
     }
     window.updateProd = (i, k, v) => { appData.products[i][k] = (k==='name'?v:parseFloat(v)||0); sync(); };
 
-    function renderProgressive(type, containerId) {
-        const container = document.getElementById(containerId); if(!container) return;
-        container.innerHTML = '';
-        for (let name in appData.costs[type]) {
-            let total = 0; appData.costs[type][name].forEach(r => total += (r.price * r.qty));
-            const div = document.createElement('div'); div.className = 'card';
-            div.innerHTML = `
-                <div style="display:flex; justify-content:space-between; margin-bottom:10px;"><span style="font-weight:bold;">${name}</span><span style="background:#eee; padding:2px 10px; border-radius:10px; font-size:12px;">累計: $${Math.round(total)}</span></div>
-                <div class="grid-header cost-grid" style="grid-template-columns: 1.4fr 1fr 1fr 1fr 0.4fr; min-width:450px;"><div>日期</div><div>單價</div><div>數量</div><div>小計</div><div></div></div>
-                <div id="list-${type}-${name}"></div>
-                <button class="btn-main" style="padding:8px; margin-top:10px; font-size:12px;" onclick="window.addRow('${type}', '${name}')">+ 新增筆數</button>`;
-            container.appendChild(div);
-            const body = document.getElementById(`list-${type}-${name}`);
-            appData.costs[type][name].forEach((r, idx) => {
-                const row = document.createElement('div'); row.className = 'grid-row cost-grid';
-                row.style.gridTemplateColumns = '1.4fr 1fr 1fr 1fr 0.4fr'; row.style.minWidth = '450px';
-                row.innerHTML = `<input type="date" value="${r.date}" onchange="window.updateRecord('${type}','${name}',${idx},'date',this.value)"><input type="number" value="${r.price}" onchange="window.updateRecord('${type}','${name}',${idx},'price',this.value)"><input type="number" value="${r.qty}" onchange="window.updateRecord('${type}','${name}',${idx},'qty',this.value)"><div style="text-align:center; font-weight:bold;">$${Math.round(r.price*r.qty)}</div><button class="btn-del" onclick="window.delRow('${type}','${name}',${idx})">×</button>`;
-                body.appendChild(row);
-            });
-        }
-    }
-    window.addRow = (t, n) => { if(!appData.costs[t][n]) appData.costs[t][n]=[]; appData.costs[t][n].push({date: new Date().toISOString().split('T')[0], price: 0, qty: 0}); sync(); };
-    window.delRow = (t, n, i) => { appData.costs[t][n].splice(i, 1); sync(); };
-    window.updateRecord = (t, n, i, k, v) => { appData.costs[t][n][i][k] = (k==='date'?v:parseFloat(v)||0); sync(); };
-
-    // 渲染「🔒 已儲存資訊紀錄」區塊 (核心改造：店家總帳備註同步鎖定)
     function renderPurchasePage() {
         const itemsList = document.getElementById('purchase-items-list');
         const shopsList = document.getElementById('purchase-shops-list');
 
-        // 1. 單品採購歷史明細 (可個別渲染於該分頁)
         if (itemsList) {
             itemsList.innerHTML = '';
             if (appData.purchases.items.length === 0) {
@@ -503,7 +526,7 @@
                         <select disabled><option value="">--請選擇--</option>${optionsHtml}</select>
                         <input type="number" value="${r.price}" disabled>
                         <input type="number" value="${r.qty}" disabled>
-                        <div style="text-align:center; font-weight:bold; color:#7f8c8d;">$${Math.round(r.price * r.qty)}</div>
+                        <div style="text-align:center; font-weight:bold; color:#333333;">$${Math.round(r.price * r.qty)}</div>
                         <input type="text" placeholder="備註" value="${r.note || ''}" style="text-align:left; padding-left:8px;" onchange="window.updatePurchase('items',${idx},'note',this.value)">
                         <button class="btn-del" onclick="window.delPurchaseRow('items',${idx})">×</button>
                     `;
@@ -512,7 +535,6 @@
             }
         }
 
-        // 2. 店家總帳歷史明細 (包含備註欄全面鎖定 disabled)
         if (shopsList) {
             shopsList.innerHTML = '';
             if (appData.purchases.shops.length === 0) {
@@ -584,8 +606,8 @@
 
     function calculateDash() {
         let rev = 0; appData.products.forEach(p => rev += (p.price * p.vol) * (1 - p.comm/100));
-        let fCost = 0; for(let n in appData.costs.food) appData.costs.food[n].forEach(r => fCost += (r.price * r.qty));
-        let oCost = 0; for(let n in appData.costs.other) appData.costs.other[n].forEach(r => oCost += (r.price * r.qty));
+        let fCost = 0;
+        let oCost = 0;
         
         if(appData.purchases) {
             appData.purchases.items.forEach(r => fCost += (r.price * r.qty));
@@ -628,7 +650,7 @@
             if(h.isClosed) { html += `<tr class="history-row"><td>${h.date}</td><td colspan="2" style="color:#7f8c8d; font-weight:bold;">【 今日店休 】</td><td>-</td></tr>`; } 
             else {
                 html += `<tr class="history-row" onclick="document.getElementById('det-${rIdx}').style.display = (document.getElementById('det-${rIdx}').style.display === 'block' ? 'none' : 'block')"><td>${h.date}</td><td>$${Math.round(h.rev)}</td><td style="color:var(--success); font-weight:bold;">$${Math.round(h.net)}</td><td style="color:var(--accent);">▾</td></tr>
-                <tr><td colspan="4" style="padding:0;"><div id="det-${rIdx}" class="details-pane"><div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;"><div><div style="font-weight:bold;margin-bottom:5px;">🍱 銷量詳情</div>${h.sales?h.sales.map(s=>`<div>${s.name}: ${s.vol}份</div>`).join(''):''}</div><div><div style="font-weight:bold;margin-bottom:5px;">💰 支出摘要</div>食材: $${Math.round(h.fCost)}<br>雜支: $${Math.round(h.oCost)}</div></div></div></td></tr>`;
+                <tr><td colspan="4" style="padding:0;"><div id="det-${rIdx}" class="details-pane"><div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;"><div><div style="font-weight:bold;margin-bottom:5px;">🍱 銷量詳情</div>${h.sales?h.sales.map(s=>`<div>${s.name}: ${s.vol}份</div>`).join(''):''}</div><div><div style="font-weight:bold;margin-bottom:5px;">💰 支出摘要</div>單品採購: $${Math.round(h.fCost)}<br>店家總帳: $${Math.round(h.oCost)}</div></div></div></td></tr>`;
             }
         });
         c.innerHTML = html + '</table>';
@@ -649,7 +671,7 @@
     function initCharts() {
         const ctxP = document.getElementById('profitChart'); const ctxS = document.getElementById('salesChart');
         if(!ctxP || !ctxS) return;
-        profitChart = new Chart(ctxP, { type: 'doughnut', data: { labels: ['食材', '雜支', '純利'], datasets: [{ data: [0,0,0], backgroundColor: ['#e74c3c', '#9b59b6', '#27ae60'] }] }, options: { responsive: true, maintainAspectRatio: false } });
+        profitChart = new Chart(ctxP, { type: 'doughnut', data: { labels: ['單品採購', '店家總帳', '純利'], datasets: [{ data: [0,0,0], backgroundColor: ['#e74c3c', '#9b59b6', '#27ae60'] }] }, options: { responsive: true, maintainAspectRatio: false } });
         salesChart = new Chart(ctxS, { type: 'bar', data: { labels: [], datasets: [{ data: [], backgroundColor: '#f39c12' }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
     }
     
