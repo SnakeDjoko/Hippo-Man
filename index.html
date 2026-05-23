@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>河馬Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
     <style>
         :root { --primary: #f39c12; --dark: #2c3e50; --bg: #f4f7f6; --border: #dee2e6; --success: #27ae60; --danger: #e74c3c; --accent: #3498db; --closed: #2c3e50; }
@@ -95,6 +96,14 @@
         .input-row-box { background: #f0f7fc !important; padding: 8px; border-radius: 6px; border: 1px dashed var(--accent); margin-bottom: 10px; }
         .input-row-box.shop-box { background: #eafaf1 !important; border-dashed-color: var(--success); }
 
+        /* 歷史明細標題列的按鈕整合樣式 */
+        .history-header-actions { display: flex; align-items: center; gap: 8px; }
+        .btn-excel-action { border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; color: white; display: inline-flex; align-items: center; }
+        .btn-excel-action.export { background: #27ae60; }
+        .btn-excel-action.export:hover { background: #219653; }
+        .btn-excel-action.import { background: #2980b9; }
+        .btn-excel-action.import:hover { background: #2471a3; }
+
         @media (max-width: 768px) {
             body { flex-direction: column; }
             .mobile-header { display: flex; }
@@ -114,7 +123,7 @@
 
 <div class="sidebar" id="sidebar">
     <div class="sidebar-header">河馬職人炒飯</div>
-    <div class="nav-group">數據分析</div>
+    <div class="nav-group">數據 analysis</div>
     <button class="nav-btn active" onclick="showPage('dash-page', this)">📊 營運分析總表</button>
     <button class="nav-btn" onclick="showPage('daily-page', this)">✍️ 今日銷量輸入</button>
     <div class="nav-group">成本與設定</div>
@@ -127,7 +136,7 @@
 
 <div class="main-content">
     <div id="dash-page" class="page active">
-        <h2>本月經營分析 (雲端同步) 3.2.0</h2>
+        <h2>本月經營分析 (雲端同步) 3.3.2</h2>
         <div class="dashboard-grid">
             <div class="stat-card"><div>實領營收</div><div id="dash-revenue" class="stat-value">$ 0</div></div>
             <div class="stat-card"><div>預計支出</div><div id="dash-cost" class="stat-value" style="color:var(--danger)">$ 0</div></div>
@@ -270,7 +279,8 @@
         products: [], history: [], 
         purchases: { items: [], shops: [] }, 
         purchaseOptions: DEFAULT_PURCHASE_OPTIONS,
-        shopOptions: DEFAULT_SHOP_OPTIONS 
+        shopOptions: DEFAULT_SHOP_OPTIONS,
+        dailyRevenues: {} // 用來儲存每日扣除銷量後的動態即時營收 { "2026-05-23": 5000 }
     };
 
     function ensureStructure() {
@@ -281,6 +291,7 @@
         if (!appData.purchases.shops) appData.purchases.shops = [];
         if (!appData.purchaseOptions || appData.purchaseOptions.length === 0) appData.purchaseOptions = DEFAULT_PURCHASE_OPTIONS;
         if (!appData.shopOptions || appData.shopOptions.length === 0) appData.shopOptions = DEFAULT_SHOP_OPTIONS;
+        if (!appData.dailyRevenues) appData.dailyRevenues = {};
         
         Object.values(CATEGORIES).forEach(cat => {
             const count = appData.products.filter(p => p.cat === cat).length;
@@ -426,7 +437,7 @@
 
     function renderDaily() {
         const c = document.getElementById('daily-list'); if(!c) return;
-        c.innerHTML = ''; let curCat = "";
+        c.innerHTML = ''; 
         
         let filteredProds = appData.products.filter(p => p.name !== "");
         if (filteredProds.length === 0) {
@@ -434,8 +445,23 @@
             return;
         }
 
+        const catOrder = { "🍚 炒飯系列": 1, "🥤 飲品系列": 2, "🥗 小菜系列": 3 };
+        
+        let sortedProdsWithIdx = filteredProds.map(p => {
+            return { originalIdx: appData.products.indexOf(p), product: p };
+        }).sort((a, b) => {
+            const orderA = catOrder[a.product.cat] || 99;
+            const orderB = catOrder[b.product.cat] || 99;
+            return orderA - orderB;
+        });
+
+        let curCat = "";
         let currentCard = null;
-        filteredProds.forEach((p) => {
+        
+        sortedProdsWithIdx.forEach((item) => {
+            const p = item.product;
+            const actualIdx = item.originalIdx;
+            
             if (p.cat !== curCat) {
                 curCat = p.cat;
                 currentCard = document.createElement('div');
@@ -446,7 +472,6 @@
                 `;
                 c.appendChild(currentCard);
             }
-            const actualIdx = appData.products.indexOf(p);
             const row = document.createElement('div'); row.className = 'grid-row sales-grid';
             row.innerHTML = `<div style="text-align:left; font-weight:bold; padding-left:5px;">${p.name}</div><input type="number" class="day-qty" data-index="${actualIdx}" value="0"><div style="text-align:center;">$${p.price}</div><div style="text-align:center; font-weight:bold; color:var(--accent);">${p.vol}</div>`;
             currentCard.appendChild(row);
@@ -454,11 +479,25 @@
     }
 
     window.saveDaily = () => {
+        const dateInput = document.getElementById('daily-date-picker').value;
+        let dayRevenue = 0;
+
         document.querySelectorAll('.day-qty').forEach(input => {
-            appData.products[input.dataset.index].vol += (parseFloat(input.value) || 0);
+            const qty = parseFloat(input.value) || 0;
+            const prod = appData.products[input.dataset.index];
+            prod.vol += qty;
+            
+            // 計算此筆輸入的實領營收扣掉抽成後的實收
+            dayRevenue += (prod.price * qty) * (1 - prod.comm / 100);
             input.value = 0;
         });
-        sync(); alert("今日銷量已成功扣除並累加！");
+
+        // 將當日營收累加至該日期的動態營收紀錄中
+        if (!appData.dailyRevenues[dateInput]) appData.dailyRevenues[dateInput] = 0;
+        appData.dailyRevenues[dateInput] += dayRevenue;
+
+        sync(); 
+        alert("今日銷量已成功扣除、累加，且營收已同步更新至月曆！");
     };
 
     window.shopClosed = () => {
@@ -620,20 +659,52 @@
         return { rev, fCost, oCost, net: rev - (fCost+oCost) };
     }
 
+    /* 關鍵優化區：月曆核心渲染邏輯，改為依據實際發生日期動態計算顯示 */
     function renderCalendar() {
         const grid = document.getElementById('calendar-grid'); if(!grid) return;
         grid.innerHTML = ''; const now = new Date(); const year = now.getFullYear(); const month = now.getMonth();
         document.getElementById('calendar-title').innerText = `${year}年 ${month + 1}月 營收/支出月曆`;
         const firstDay = new Date(year, month, 1).getDay(); const daysInMonth = new Date(year, month + 1, 0).getDate();
+        
         for(let i=0; i<firstDay; i++) { const div = document.createElement('div'); div.className = 'cal-day empty'; grid.appendChild(div); }
+        
         for(let d=1; d<=daysInMonth; d++) {
             const div = document.createElement('div'); div.className = 'cal-day'; if(d === now.getDate()) div.classList.add('today');
             div.innerHTML = `<span class="date-num">${d}</span>`;
-            if (appData.history) {
-                const record = appData.history.find(h => { const hDate = new Date(h.date); return hDate.getFullYear() === year && hDate.getMonth() === month && hDate.getDate() === d; });
-                if(record) {
-                    if(record.isClosed) { div.innerHTML += `<span class="closed-tag">休</span>`; } 
-                    else { div.innerHTML += `<div class="data-wrapper"><span class="rev-val">+$${Math.round(record.rev)}</span><span class="cost-val">-$${Math.round((record.fCost||0)+(record.oCost||0))}</span></div>`; }
+            
+            // 格式化標準日期字串，如 "2026-05-01" 
+            const curDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            
+            // 1. 檢查歷史紀錄中該日是否有「店休」標記
+            const historyMatch = appData.history ? appData.history.find(h => h.date === curDateStr || new Date(h.date).toLocaleDateString() === new Date(curDateStr).toLocaleDateString()) : null;
+            
+            if (historyMatch && historyMatch.isClosed) {
+                div.innerHTML += `<span class="closed-tag">休</span>`;
+            } else {
+                // 2. 獲取當日即時營收 (從今日銷量輸入取得)
+                let dayRevenue = appData.dailyRevenues[curDateStr] || 0;
+                
+                // 3. 獲取當日總支出 (動態撈取單品與店家的加總)
+                let dayCost = 0;
+                if (appData.purchases) {
+                    appData.purchases.items.forEach(r => { if (r.date === curDateStr) dayCost += (r.price * r.qty); });
+                    appData.purchases.shops.forEach(r => { if (r.date === curDateStr) dayCost += r.total; });
+                }
+                
+                // 4. 如果歷史結算有該日非店休資料 (相容舊版/匯入資料)，且無新動態營收時，採用歷史數值
+                if (historyMatch && dayRevenue === 0 && dayCost === 0) {
+                    dayRevenue = historyMatch.rev || 0;
+                    dayCost = (historyMatch.fCost || 0) + (historyMatch.oCost || 0);
+                }
+
+                // 5. 只要當天有任何營收或支出數據，就顯示於月曆格子內
+                if (dayRevenue > 0 || dayCost > 0) {
+                    div.innerHTML += `
+                        <div class="data-wrapper">
+                            <span class="rev-val">${dayRevenue > 0 ? '+$' + Math.round(dayRevenue).toLocaleString() : ''}</span>
+                            <span class="cost-val">${dayCost > 0 ? '-$' + Math.round(dayCost).toLocaleString() : ''}</span>
+                        </div>
+                    `;
                 }
             }
             grid.appendChild(div);
@@ -642,8 +713,26 @@
 
     function renderHistory() {
         const c = document.getElementById('history-list'); if(!c) return;
-        const header = `<div style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid var(--border);"><span style="font-weight:bold; color:var(--dark);">歷史結算明細表</span><button onclick="window.clearHistory()" style="background:var(--danger); color:white; border:none; padding:5px 12px; border-radius:4px; cursor:pointer; font-size:12px; font-weight:bold;">🚫清空記錄</button></div>`;
-        if (!appData.history || !appData.history.length) { c.innerHTML = header + '<div style="padding:20px;color:#999;text-align:center;">暫無紀錄</div>'; return; }
+        
+        const header = `
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid var(--border); flex-wrap: wrap; gap:10px;">
+                <span style="font-weight:bold; color:var(--dark);">歷史結算明細表</span>
+                <div class="history-header-actions">
+                    <button class="btn-excel-action export" onclick="window.exportHistoryToExcel()">📥 匯出 Excel</button>
+                    <label class="btn-excel-action import">
+                        📤 匯入 Excel
+                        <input type="file" id="history-excel-import" accept=".xlsx, .xls" style="display:none;" onchange="window.importHistoryFromExcel(this)">
+                    </label>
+                    <button onclick="window.clearHistory()" style="background:var(--danger); color:white; border:none; padding:5px 12px; border-radius:4px; cursor:pointer; font-size:12px; font-weight:bold;">🚫清空記錄</button>
+                </div>
+            </div>
+        `;
+        
+        if (!appData.history || !appData.history.length) { 
+            c.innerHTML = header + '<div style="padding:20px;color:#999;text-align:center;">暫無紀錄</div>'; 
+            return; 
+        }
+        
         let html = header + '<table style="width:100%; border-collapse: collapse; text-align:center;"><tr style="background:#f8f9fa;font-weight:bold;"><td style="padding:10px;">日期</td><td>營收</td><td>純利</td><td>詳情</td></tr>';
         appData.history.slice().reverse().forEach((h, i) => {
             const rIdx = appData.history.length - 1 - i;
@@ -656,15 +745,136 @@
         c.innerHTML = html + '</table>';
     }
 
-    window.clearHistory = () => { if(confirm("確定要清空所有歷史紀錄嗎？")) { appData.history = []; sync(); } };
+    window.exportHistoryToExcel = () => {
+        try {
+            if (!appData.history || appData.history.length === 0) {
+                alert("目前還沒有任何歷史結算紀錄可以匯出哦！");
+                return;
+            }
+
+            const wb = XLSX.utils.book_new();
+            const historyRows = [];
+            
+            appData.history.forEach(h => {
+                if (h.isClosed) {
+                    historyRows.push({
+                        "結算日期": h.date,
+                        "狀態": "今日店休",
+                        "實領營收": 0,
+                        "單品採購總額": 0,
+                        "店家總帳總額": 0,
+                        "預估純利": 0,
+                        "詳細品項銷量摘要": "無"
+                    });
+                } else {
+                    const salesSummary = h.sales ? h.sales.map(s => `${s.name}:${s.vol}份`).join(' | ') : "";
+                    historyRows.push({
+                        "結算日期": h.date,
+                        "狀態": "營業日",
+                        "實領營收": Math.round(h.rev || 0),
+                        "單品採購總額": Math.round(h.fCost || 0),
+                        "店家總帳總額": Math.round(h.oCost || 0),
+                        "預估純利": Math.round(h.net || 0),
+                        "詳細品項銷量摘要": salesSummary
+                    });
+                }
+            });
+
+            const ws = XLSX.utils.json_to_sheet(historyRows);
+            XLSX.utils.book_append_sheet(wb, ws, "歷史明細紀錄");
+
+            const today = new Date().toISOString().split('T')[0];
+            XLSX.writeFile(wb, `Hippoman_歷史結算報表_${today}.xlsx`);
+        } catch (error) {
+            alert("Excel 匯出失敗：" + error.message);
+        }
+    };
+
+    window.importHistoryFromExcel = (input) => {
+        const file = input.files[0];
+        if (!file) return;
+
+        if (!confirm("⚠️ 警告：匯入歷史紀錄將會【完全覆蓋】目前的歷史明細與月曆顯示，確定要繼續嗎？")) {
+            input.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+
+                if (!workbook.SheetNames.includes("歷史明細紀錄")) {
+                    throw new Error("找不到名為「歷史明細紀錄」的工作表，請確認檔案格式是否正確。");
+                }
+
+                const sheet = workbook.Sheets["歷史明細紀錄"];
+                const json = XLSX.utils.sheet_to_json(sheet);
+
+                const importedHistory = json.map(row => {
+                    const isClosed = row["狀態"] === "今日店休";
+                    let salesArray = [];
+                    const salesStr = row["詳細品項銷量摘要"] || "";
+                    if (salesStr && salesStr !== "無") {
+                        salesArray = salesStr.split(' | ').map(item => {
+                            const parts = item.split(':');
+                            return {
+                                name: parts[0] || "",
+                                vol: parts[1] ? parseFloat(parts[1].replace("份", "")) : 0
+                            };
+                        });
+                    }
+
+                    return {
+                        date: String(row["結算日期"] || ""),
+                        isClosed: isClosed,
+                        rev: parseFloat(row["實領營收"]) || 0,
+                        fCost: parseFloat(row["單品採購總額"]) || 0,
+                        oCost: parseFloat(row["店家總帳總額"]) || 0,
+                        net: parseFloat(row["預估純利"]) || 0,
+                        sales: salesArray
+                    };
+                }).filter(h => h.date !== "");
+
+                if (importedHistory.length === 0) {
+                    throw new Error("Excel 檔案內沒有合法的歷史數據！");
+                }
+
+                appData.history = importedHistory;
+                await sync();
+                alert(`🎉 成功匯入 ${importedHistory.length} 筆歷史結算紀錄！`);
+            } catch (error) {
+                alert("匯入失敗：" + error.message);
+            } finally {
+                input.value = '';
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    };
+
+    window.clearHistory = () => { if(confirm("確定要清空所有歷史紀錄嗎？")) { appData.history = []; appData.dailyRevenues = {}; sync(); } };
     
     window.archiveMonth = () => {
         if(!confirm("確定結算本月嗎？數據將歸零並存入歷史。")) return;
         const s = calculateDash();
-        appData.history.push({ date: new Date().toLocaleDateString(), rev: s.rev, fCost: s.fCost, oCost: s.oCost, net: s.net, isClosed: false, sales: appData.products.filter(p => p.vol > 0).map(p => ({name: p.name, vol: p.vol})) });
+        const curDateStr = new Date().toISOString().split('T')[0];
+        
+        appData.history.push({ 
+            date: curDateStr, 
+            rev: s.rev, 
+            fCost: s.fCost, 
+            oCost: s.oCost, 
+            net: s.net, 
+            isClosed: false, 
+            sales: appData.products.filter(p => p.vol > 0).map(p => ({name: p.name, vol: p.vol})) 
+        });
+        
         appData.products.forEach(p => p.vol = 0);
         appData.purchases = { items: [], shops: [] };
-        sync(); alert("本月結算完成！");
+        appData.dailyRevenues = {}; // 結算完成後清空當月即時營收字典
+        sync(); 
+        alert("本月結算完成！過往數據已成功歸檔存入歷史。");
     };
 
     let profitChart, salesChart;
