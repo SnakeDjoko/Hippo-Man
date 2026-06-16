@@ -13,7 +13,7 @@
         body { font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; margin: 0; display: flex; height: 100vh; background: var(--bg); overflow: hidden; }
         
         /* Layout */
-        .mobile-header { display: none; background: var(--dark); color: white; padding: 10px 15px; width: 100%; position: fixed; top: 0; z-index: 1000; justify-content: space-between; align-items: center; }
+        .mobile-header { display: none; background: var(--dark); color: white; padding: 0 15px; height: 50px; width: 100%; position: fixed; top: 0; z-index: 1000; justify-content: space-between; align-items: center; box-sizing: border-box; }
         .sidebar { width: 230px; background: var(--dark); color: white; display: flex; flex-direction: column; flex-shrink: 0; transition: transform 0.3s ease; z-index: 999; }
         .sidebar-header { padding: 25px 20px; text-align: center; font-weight: bold; color: var(--primary); background: rgba(0,0,0,0.2); font-size: 1.2rem; }
         .nav-group { padding: 15px 0 5px 20px; font-size: 11px; color: #7f8c8d; text-transform: uppercase; letter-spacing: 1px; }
@@ -102,12 +102,13 @@
         .btn-excel-action.import { background: #2980b9; }
         .btn-excel-action.import:hover { background: #2471a3; }
 
-        @media (max-width: 768px) {
+        /* 調整移動端與橫向螢幕(小於1024px均套用抽屜式選單) */
+        @media (max-width: 1024px) {
             body { flex-direction: column; }
             .mobile-header { display: flex; }
-            .sidebar { position: fixed; top: 50px; left: 0; height: calc(100vh - 50px); transform: translateX(-100%); width: 80%; }
+            .sidebar { position: fixed; top: 50px; left: 0; height: calc(100vh - 50px); transform: translateX(-100%); width: 80%; max-width: 280px; }
             .sidebar.show { transform: translateX(0); }
-            .main-content { padding: 70px 15px 20px 15px; }
+            .main-content { padding: 65px 15px 20px 15px; }
             .cal-day { height: 110px; }
 
             /* 修正移動端：採購管理區塊防重疊上下排版 */
@@ -116,13 +117,21 @@
             .item-manager span { text-align: center; width: 100%; margin-bottom: 2px; }
             .item-manager input, .item-manager select, .item-manager button { width: 100% !important; min-width: 0 !important; text-align: center; text-align-last: center; }
         }
+
+        /* 針對小手機與窄螢幕防標題文字過大蓋住內容 */
+        @media (max-width: 480px) {
+            .mobile-header { font-size: 14px; }
+            h2 { font-size: 1.3rem !important; margin-top: 5px; margin-bottom: 12px; }
+            .section-title { font-size: 16px; margin: 10px 0; }
+            .main-content { padding: 65px 10px 20px 10px; }
+        }
     </style>
 </head>
 <body>
 
 <div class="mobile-header">
-    <div style="font-weight:bold; color:var(--primary);">河馬職人炒飯</div>
-    <button onclick="toggleMenu()" style="background:none; border:1px solid #7f8c8d; color:white; border-radius:4px; padding:5px 10px;">選單 ☰</button>
+    <div style="font-weight:bold; color:var(--primary); white-space:nowrap;">河馬職人炒飯</div>
+    <button onclick="toggleMenu()" style="background:none; border:1px solid #7f8c8d; color:white; border-radius:4px; padding:5px 10px; cursor:pointer;">選單 ☰</button>
 </div>
 
 <div class="sidebar" id="sidebar">
@@ -423,7 +432,7 @@
         const targetPage = document.getElementById(id);
         if (targetPage) targetPage.classList.add('active');
         if (btn) btn.classList.add('active');
-        if(window.innerWidth <= 768) window.toggleMenu();
+        if(window.innerWidth <= 1024) window.toggleMenu();
     };
 
     window.addOption = (type) => {
