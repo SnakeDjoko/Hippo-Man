@@ -10,7 +10,9 @@
     <style>
         :root { --primary: #f39c12; --dark: #2c3e50; --bg: #f4f7f6; --border: #dee2e6; --success: #27ae60; --danger: #e74c3c; --accent: #3498db; --closed: #2c3e50; }
         * { box-sizing: border-box; }
-        body { font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; margin: 0; display: flex; height: 100vh; background: var(--bg); overflow: hidden; }
+        
+        /* 採用 dvh 確保在手機端網址列收合時，高度依然精確符合螢幕 */
+        body { font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; margin: 0; display: flex; height: 100vh; height: 100dvh; background: var(--bg); overflow: hidden; }
         
         /* Layout */
         .mobile-header { display: none; background: var(--dark); color: white; padding: 0 15px; height: 50px; width: 100%; position: fixed; top: 0; z-index: 1000; justify-content: space-between; align-items: center; box-sizing: border-box; }
@@ -104,11 +106,13 @@
 
         /* 調整移動端與橫向螢幕(小於1024px均套用抽屜式選單) */
         @media (max-width: 1024px) {
-            body { flex-direction: column; }
+            body { flex-direction: column; height: 100dvh; }
             .mobile-header { display: flex; }
-            .sidebar { position: fixed; top: 50px; left: 0; height: calc(100vh - 50px); transform: translateX(-100%); width: 80%; max-width: 280px; }
+            .sidebar { position: fixed; top: 50px; left: 0; height: calc(100vh - 50px); height: calc(100dvh - 50px); width: 80%; max-width: 280px; }
             .sidebar.show { transform: translateX(0); }
-            .main-content { padding: 65px 15px 20px 15px; }
+            
+            /* 大幅調高底部留白 padding-bottom 至 100px，防止被手機瀏覽器下排工具列與虛擬返回條擋到 */
+            .main-content { padding: 65px 15px 100px 15px; }
             .cal-day { height: 110px; }
 
             /* 修正移動端：採購管理區塊防重疊上下排版 */
@@ -118,12 +122,12 @@
             .item-manager input, .item-manager select, .item-manager button { width: 100% !important; min-width: 0 !important; text-align: center; text-align-last: center; }
         }
 
-        /* 針對小手機與窄螢幕防標題文字過大蓋住內容 */
+        /* 針對小手機與窄螢幕防標題文字過大，再度加深底部留白留出安全點擊空間 */
         @media (max-width: 480px) {
             .mobile-header { font-size: 14px; }
             h2 { font-size: 1.3rem !important; margin-top: 5px; margin-bottom: 12px; }
             .section-title { font-size: 16px; margin: 10px 0; }
-            .main-content { padding: 65px 10px 20px 10px; }
+            .main-content { padding: 65px 10px 120px 10px; }
         }
     </style>
 </head>
@@ -324,7 +328,8 @@
                 <span id="settlement-toggle-icon" style="color: var(--accent); font-weight: bold; font-size: 14px;">展開 ▾</span>
             </div>
             <div id="monthly-settlement-details" style="display: none; margin-top: 15px; border-top: 1px solid var(--border); padding-top: 15px;">
-                </div>
+                <!-- 數據加總將由此處 JavaScript 動態填入 -->
+            </div>
         </div>
     </div>
 
