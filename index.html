@@ -61,15 +61,17 @@
         .btn-cat-action.del:hover { background: #c0392b; }
 
         /* 欄位寬度配置 */
-        .sales-grid { grid-template-columns: 2fr 1fr 1fr 1.2fr; min-width: 450px; }
-        .setting-grid { grid-template-columns: 2fr 1fr 1fr 0.3fr; min-width: 450px; }
+        .sales-input-grid { grid-template-columns: 1.2fr 1.5fr 1.2fr 1fr 1fr 1.2fr 0.4fr; min-width: 650px; }
+        .setting-grid { grid-template-columns: 2fr 1fr 0.3fr; min-width: 350px; }
         .cost-grid { grid-template-columns: 1.4fr 1.2fr 1fr 1fr 1fr 2fr 0.4fr; min-width: 700px; }
-        .shop-grid { grid-template-columns: 1.4fr 1.5fr 1.5fr 2.5fr 0.4fr; min-width: 600px; }
+        .shop-input-grid { grid-template-columns: 1.2fr 1.2fr 1fr 1fr 1fr 1.8fr 0.4fr; min-width: 750px; }
+        .shop-record-grid { grid-template-columns: 1.4fr 1.5fr 1.5fr 2.5fr 0.4fr; min-width: 600px; }
 
         input, select { padding: 10px 5px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; text-align: center; width: 100%; height: 38px; }
         select { text-align-last: center; background: white; cursor: pointer; }
+        optgroup { font-weight: bold; background: #fcf3cf; color: #b7950b; text-align: left; }
+        optgroup option { background: #ffffff; color: #333333; text-align: center; font-weight: normal; }
         
-        /* 唯讀/鎖定欄位樣式 */
         input:disabled, select:disabled { background-color: #e9ecef !important; color: #333333 !important; font-weight: 500; cursor: not-allowed; border: 1px solid #ced4da; opacity: 1; -webkit-text-fill-color: #333333; }
 
         .btn-main { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; font-size: 14px; }
@@ -78,25 +80,22 @@
         .btn-del:hover { color: var(--danger); }
         
         .history-row { cursor: pointer; border-bottom: 1px solid var(--border); }
+        .history-row:hover { background-color: #fcfcfc; }
         .details-pane { display: none; background: #fdfdfd; padding: 15px; border-bottom: 2px solid var(--primary); }
 
-        /* 標題加大加粗區 */
         .section-title { font-size: 20px; font-weight: 800; color: var(--dark); margin: 15px 0 15px 0; padding-left: 12px; border-left: 6px solid var(--accent); line-height: 1.2; }
-        .sub-block-title { font-size: 13px; font-weight: bold; color: #7f8c8d; margin: 15px 0 5px 2px; text-align: left; }
+        .sub-block-title { font-size: 14px; font-weight: bold; color: #2c3e50; margin: 10px 0 10px 2px; text-align: left; display: flex; align-items: center; gap: 5px; }
 
-        /* 管理器 */
+        /* 3.4.2 修正：覆蓋內距（padding），防止下拉選單文字下半部因空間不足被切除 */
         .item-manager-wrapper { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 15px; }
-        .item-manager { flex: 1; min-width: 240px; display: flex; gap: 8px; background: #ebf5fb; padding: 8px 12px; border-radius: 8px; align-items: center; }
+        .item-manager { flex: 1; min-width: 320px; display: flex; gap: 8px; background: #ebf5fb; padding: 8px 12px; border-radius: 8px; align-items: center; }
         .item-manager.delete-box { background: #fadbd8; }
-        .item-manager input, .item-manager select { flex: 1; text-align: left; padding-left: 10px; height: 34px; }
-        .item-manager select { text-align-last: left; }
-        .item-manager button { height: 34px; padding: 0 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; font-size: 13px; white-space: nowrap; }
+        .item-manager input, .item-manager select { flex: 2; text-align: left; padding: 5px 8px; height: 36px; min-width: 140px; text-align-last: left; }
+        .item-manager button { flex: 1; height: 36px; padding: 0 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; font-size: 13px; white-space: nowrap; min-width: 80px; }
 
-        /* 專用輸入區面板外觀 */
         .input-row-box { background: #f0f7fc !important; padding: 8px; border-radius: 6px; border: 1px dashed var(--accent); margin-bottom: 10px; }
         .input-row-box.shop-box { background: #eafaf1 !important; border-dashed-color: var(--success); }
 
-        /* 歷史明細標題列的按鈕整合樣式 */
         .history-header-actions { display: flex; align-items: center; gap: 8px; }
         .btn-excel-action { border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; color: white; display: inline-flex; align-items: center; }
         .btn-excel-action.export { background: #27ae60; }
@@ -123,20 +122,22 @@
 
 <div class="sidebar" id="sidebar">
     <div class="sidebar-header">河馬職人炒飯</div>
-    <div class="nav-group">數據 analysis</div>
+    <div class="nav-group">數據分析</div>
     <button class="nav-btn active" onclick="showPage('dash-page', this)">📊 營運分析總表</button>
-    <button class="nav-btn" onclick="showPage('daily-page', this)">✍️ 今日銷量輸入</button>
+    <button class="nav-btn" onclick="showPage('daily-page', this)">✍️ 銷量輸入</button>
     <div class="nav-group">成本與設定</div>
     <button class="nav-btn" onclick="showPage('product-page', this)">🍱 品項定價設定</button>
+    <button class="nav-btn" onclick="showPage('catalog-page', this)">🗂️ 採購品項架構管理</button>
     <button class="nav-btn" onclick="showPage('purchase-page', this)">🛒 單品採購明細</button>
     <button class="nav-btn" onclick="showPage('shop-page', this)">🏪 店家總帳紀錄</button>
-    <div class="nav-group">存檔</div>
-    <button class="nav-btn" onclick="showPage('history-page', this)">📜 歷史結算紀錄</button>
+    <div class="nav-group">明細與分析</div>
+    <button class="nav-btn" onclick="showPage('calendar-page', this)">📅 營收月表</button>
+    <button class="nav-btn" onclick="showPage('history-page', this)">📋 實時紀錄明細</button>
 </div>
 
 <div class="main-content">
     <div id="dash-page" class="page active">
-        <h2>本月經營分析 (雲端同步) 3.3.2</h2>
+        <h2>本月經營分析(雲端同步) 3.4.2</h2>
         <div class="dashboard-grid">
             <div class="stat-card"><div>實領營收</div><div id="dash-revenue" class="stat-value">$ 0</div></div>
             <div class="stat-card"><div>預計支出</div><div id="dash-cost" class="stat-value" style="color:var(--danger)">$ 0</div></div>
@@ -146,49 +147,90 @@
             <div class="chart-box"><h4>💰 損益佔比</h4><canvas id="profitChart"></canvas></div>
             <div class="chart-box"><h4>🏆 銷量排行</h4><canvas id="salesChart"></canvas></div>
         </div>
+        
         <button class="btn-main" onclick="window.archiveMonth()">🔒 執行月結算並存檔</button>
     </div>
 
     <div id="daily-page" class="page">
-        <h2>✍️ 今日銷量輸入</h2>
+        <h2>✍️ 銷量輸入</h2>
         <div class="card">
             <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <label style="font-weight:bold;">日期：</label>
-                    <input type="date" id="daily-date-picker" style="width:150px;">
-                </div>
+                <div class="sub-block-title" style="margin:0;">✍️ 新增銷售明細</div>
                 <button class="btn-rest" onclick="window.shopClosed()">🚫 今日店休</button>
             </div>
-            <div id="daily-list"></div>
-            <button class="btn-main" style="margin-top:20px;" onclick="window.saveDaily()">💾 確認存檔並同步</button>
+            
+            <div class="grid-header sales-input-grid" style="background: #fff9e6; border-bottom: none; padding: 4px 5px; font-size: 12px; color: #d35400;">
+                <div>銷售日期</div><div>品項選擇</div><div>抽成管道</div><div>銷售份數</div><div>金額小計</div><div>實際銷售額</div><div></div>
+            </div>
+            <div class="grid-row sales-input-grid input-row-box" style="margin-top:0; background: #fffdf7 !important; border-color: #f39c12;">
+                <input type="date" id="input-sales-date">
+                <select id="input-sales-select" onchange="window.calcSalesRowTotals()"><option value="">--請選擇品項--</option></select>
+                <select id="input-sales-platform" onchange="window.calcSalesRowTotals()">
+                    <option value="自取">自取</option>
+                    <option value="Uber-Eats">Uber-Eats</option>
+                    <option value="熊貓">熊貓</option>
+                </select>
+                <input type="number" id="input-sales-qty" placeholder="份數" value="0" oninput="window.calcSalesRowTotals()">
+                <div style="text-align:center; font-weight:bold; color:#7f8c8d; line-height:38px;" id="input-sales-subtotal">$ 0</div>
+                <div style="text-align:center; font-weight:bold; color:var(--success); line-height:38px;" id="input-sales-actual">$ 0</div>
+                <div></div>
+            </div>
+            <button class="btn-main" style="padding:10px; margin-bottom:20px; font-size:13px; background:var(--primary);" onclick="window.commitSales()">💾 儲存銷售明細</button>
+
+            <div class="sub-block-title">🔒 本月已儲存銷售紀錄</div>
+            <div class="grid-header sales-input-grid">
+                <div>日期</div><div>品項</div><div>管道</div><div>份數</div><div>金額小計</div><div>實際銷售額</div><div></div>
+            </div>
+            <div id="sales-records-list"></div>
         </div>
     </div>
 
+    <div id="catalog-page" class="page">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap:10px;">
+            <h2 style="margin: 0;">🗂️ 採購品項架構管理</h2>
+            <button class="btn-excel-action import" style="background: var(--accent); padding: 8px 16px; font-size:13px;" onclick="window.addCatalogCategory()">➕ 增加新類別</button>
+        </div>
+        
+        <div class="item-manager-wrapper">
+            <div class="item-manager" style="background: #ebf5fb;">
+                <span style="font-size:13px; font-weight:bold; white-space:nowrap; color:#2980b9;">➕ 新增品項：</span>
+                <select id="catalog-add-cat-select"><option value="">-選擇分類-</option></select>
+                <input type="text" id="catalog-add-item-input" placeholder="輸入品項名稱">
+                <button onclick="window.addCatalogItem()" style="background:var(--accent); color:white;">增加品項</button>
+            </div>
+            <div class="item-manager delete-box">
+                <span style="font-size:13px; font-weight:bold; white-space:nowrap; color:#c0392b;">🗑️ 刪除品項：</span>
+                <select id="catalog-del-item-select"><option value="">-選擇品項-</option></select>
+                <button onclick="window.deleteCatalogItem()" style="background:var(--danger); color:white;">刪除品項</button>
+            </div>
+        </div>
+
+        <div id="catalog-list-container"></div>
+    </div>
+
     <div id="product-page" class="page">
-        <h2>🍱 品項定價設定</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 15px;">
+            <h2 style="margin: 0;">🍱 品項定價設定</h2>
+            <div style="display: flex; gap: 12px; align-items: center; background: #fff; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border); font-size: 13px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                <span style="font-weight: bold; color: var(--dark);">平台抽成：</span>
+                <label style="display: flex; align-items: center; gap: 4px;">自取 <input type="number" id="comm-self" style="width: 50px; height: 28px; padding: 2px; text-align: center;" onchange="window.updatePlatformComm('self', this.value)"> %</label>
+                <label style="display: flex; align-items: center; gap: 4px;">Uber-Eats <input type="number" id="comm-uber" style="width: 50px; height: 28px; padding: 2px; text-align: center;" onchange="window.updatePlatformComm('uber', this.value)"> %</label>
+                <label style="display: flex; align-items: center; gap: 4px;">熊貓 <input type="number" id="comm-panda" style="width: 50px; height: 28px; padding: 2px; text-align: center;" onchange="window.updatePlatformComm('panda', this.value)"> %</label>
+            </div>
+        </div>
         <div class="card" id="product-settings-container" style="background: transparent; border: none; box-shadow: none; padding: 0;"></div>
     </div>
 
     <div id="purchase-page" class="page">
         <h2>🛒 單品採購明細管理</h2>
         <div class="section-title" style="border-left-color: var(--accent);">單品採購明細</div>
-        
-        <div class="item-manager-wrapper">
-            <div class="item-manager">
-                <span style="font-size:13px; font-weight:bold; white-space:nowrap; color:#2980b9;">➕ 新增：</span>
-                <input type="text" id="new-item-input" placeholder="輸入品項名稱">
-                <button onclick="window.addOption('items')" style="background:var(--accent); color:white;">增加品項</button>
-            </div>
-            <div class="item-manager delete-box">
-                <span style="font-size:13px; font-weight:bold; white-space:nowrap; color:#c0392b;">🗑️ 刪除：</span>
-                <select id="delete-item-select"><option value="">--選擇品項--</option></select>
-                <button onclick="window.deleteOption('items')" style="background:var(--danger); color:white;">刪除品項</button>
-            </div>
-        </div>
 
         <div class="card">
             <div class="sub-block-title">✍️ 新增輸入列</div>
-            <div class="grid-row cost-grid input-row-box">
+            <div class="grid-header cost-grid" style="background: #ebf5fb; border-bottom: none; padding: 4px 5px; font-size: 12px; color: #2980b9;">
+                <div>採購日期</div><div>品項選擇</div><div>物品單價</div><div>採購數量</div><div>金額小計</div><div>備註說明</div><div></div>
+            </div>
+            <div class="grid-row cost-grid input-row-box" style="margin-top:0;">
                 <input type="date" id="input-item-date">
                 <select id="input-item-select"><option value="">--請選擇--</option></select>
                 <input type="number" id="input-item-price" placeholder="單價" value="0">
@@ -213,12 +255,12 @@
         
         <div class="item-manager-wrapper">
             <div class="item-manager" style="background:#e8f8f5;">
-                <span style="font-size:13px; font-weight:bold; white-space:nowrap; color:#16a085;">➕ 新增：</span>
+                <span style="font-size:13px; font-weight:bold; white-space:nowrap; color:#16a085;">➕ 新增店家：</span>
                 <input type="text" id="new-shop-input" placeholder="輸入店家名稱">
                 <button onclick="window.addOption('shops')" style="background:var(--success); color:white;">新增店家</button>
             </div>
             <div class="item-manager delete-box">
-                <span style="font-size:13px; font-weight:bold; white-space:nowrap; color:#c0392b;">🗑️ 刪除：</span>
+                <span style="font-size:13px; font-weight:bold; white-space:nowrap; color:#c0392b;">🗑️ 刪除店家：</span>
                 <select id="delete-shop-select"><option value="">--選擇店家--</option></select>
                 <button onclick="window.deleteOption('shops')" style="background:var(--danger); color:white;">刪除店家</button>
             </div>
@@ -226,30 +268,43 @@
 
         <div class="card">
             <div class="sub-block-title">✍️ 新增輸入列</div>
-            <div class="grid-row shop-grid input-row-box shop-box">
+            <div class="grid-header shop-input-grid" style="background: #eafaf1; border-bottom: none; padding: 4px 5px; font-size: 12px; color: #16a085;">
+                <div>消費日期</div><div>店家選擇</div><div>消費總價</div><div>備註快捷選項1</div><div>備註快捷選項2</div><div>手動備註說明</div><div></div>
+            </div>
+            <div class="grid-row shop-input-grid input-row-box shop-box" style="margin-top:0;">
                 <input type="date" id="input-shop-date">
                 <select id="input-shop-select"><option value="">--請選擇店家--</option></select>
                 <input type="number" id="input-shop-total" placeholder="總價" value="0">
-                <input type="text" id="input-shop-note" placeholder="備註" style="text-align:left; padding-left:8px;">
+                <select id="input-shop-shortcut1"><option value="">-無-</option></select>
+                <select id="input-shop-shortcut2"><option value="">-無-</option></select>
+                <input type="text" id="input-shop-note" placeholder="備註說明" style="text-align:left; padding-left:8px;">
                 <div></div>
             </div>
             <button class="btn-main" style="padding:10px; margin-bottom:20px; font-size:13px; background:var(--success);" onclick="window.commitPurchase('shops')">💾 儲存店家總帳</button>
 
             <div class="sub-block-title">🔒 已儲存資訊紀錄</div>
-            <div class="grid-header shop-grid">
-                <div>日期</div><div>店家</div><div>總價</div><div>備註</div><div></div>
+            <div class="grid-header shop-record-grid">
+                <div>日期</div><div>店家</div><div>總價</div><div>完整組合備註</div><div></div>
             </div>
             <div id="purchase-shops-list"></div>
         </div>
     </div>
 
-    <div id="history-page" class="page">
-        <h2>📜 歷史結算紀錄</h2>
-        <div class="card calendar-box">
-            <div id="calendar-title" style="padding:12px; font-weight:bold; text-align:center; font-size:18px; color:var(--dark);">月曆視圖</div>
+    <div id="calendar-page" class="page">
+        <h2>📅 營收月表數據分析</h2>
+        <div class="card calendar-box" style="padding:0; overflow:hidden;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: white; border-bottom: 1px solid var(--border);">
+                <button class="btn-rest" onclick="window.changeCalendarMonth(-1)" style="background: #34495e;">◀ 上個月</button>
+                <div id="calendar-title" style="font-weight:bold; font-size:18px; color:var(--dark); margin:0;">載入中...</div>
+                <button class="btn-rest" onclick="window.changeCalendarMonth(1)" style="background: #34495e;">下個月 ▶</button>
+            </div>
             <div class="calendar-header"><div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div></div>
             <div class="calendar-grid" id="calendar-grid"></div>
         </div>
+    </div>
+
+    <div id="history-page" class="page">
+        <h2>📋 實時紀錄明細表</h2>
         <div class="card" id="history-list" style="padding:0;"></div>
     </div>
 </div>
@@ -272,16 +327,20 @@
     const docRef = doc(db, "appData", "current");
 
     const CATEGORIES = { FRIED_RICE: "🍚 炒飯系列", DRINK: "🥤 飲品系列", SIDE: "🥗 小菜系列" };
-    const DEFAULT_PURCHASE_OPTIONS = ["米", "蛋", "醬油", "肉", "排骨", "香腸", "鳳梨", "油", "鹽", "味精", "胡椒粉", "蔥", "洋蔥", "胡蘿蔔", "白蘿蔔", "玉米", "芹菜", "高麗菜"];
     const DEFAULT_SHOP_OPTIONS = ["好市多", "家樂福", "全聯", "傳統市場", "大潤發", "蝦皮購物", "瓦斯行"];
 
     let appData = { 
         products: [], history: [], 
         purchases: { items: [], shops: [] }, 
-        purchaseOptions: DEFAULT_PURCHASE_OPTIONS,
+        purchaseCategories: ["食材", "調味料", "其他"],
+        purchaseCatalog: { "食材": ["米", "蛋", "肉", "排骨", "香腸", "鳳梨", "蔥", "洋蔥", "胡蘿蔔", "白蘿蔔", "玉米", "芹菜", "高麗菜"], "調味料": ["醬油", "油", "鹽", "味精", "胡椒粉"], "其他": [] },
         shopOptions: DEFAULT_SHOP_OPTIONS,
-        dailyRevenues: {} // 用來儲存每日扣除銷量後的動態即時營收 { "2026-05-23": 5000 }
+        salesRecords: [], 
+        platformComms: { self: 0, uber: 35, panda: 35 } 
     };
+
+    let calYear = new Date().getFullYear();
+    let calMonth = new Date().getMonth(); 
 
     function ensureStructure() {
         if (!appData.products) appData.products = [];
@@ -289,14 +348,40 @@
         if (!appData.purchases) appData.purchases = { items: [], shops: [] };
         if (!appData.purchases.items) appData.purchases.items = [];
         if (!appData.purchases.shops) appData.purchases.shops = [];
-        if (!appData.purchaseOptions || appData.purchaseOptions.length === 0) appData.purchaseOptions = DEFAULT_PURCHASE_OPTIONS;
         if (!appData.shopOptions || appData.shopOptions.length === 0) appData.shopOptions = DEFAULT_SHOP_OPTIONS;
-        if (!appData.dailyRevenues) appData.dailyRevenues = {};
+        if (!appData.salesRecords) appData.salesRecords = []; 
+        if (!appData.platformComms) appData.platformComms = { self: 0, uber: 35, panda: 35 }; 
         
+        if (!appData.purchaseCategories) appData.purchaseCategories = ["食材", "調味料", "其他"];
+        if (!appData.purchaseCatalog) {
+            appData.purchaseCatalog = { "食材": [], "調味料": [], "其他": [] };
+            if (appData.purchaseOptions && appData.purchaseOptions.length > 0) {
+                appData.purchaseOptions.forEach(opt => {
+                    if (typeof opt === 'string') {
+                        if (["米", "蛋", "肉", "排骨", "香腸", "鳳梨", "蔥", "洋蔥", "胡蘿蔔", "白蘿蔔", "玉米", "芹菜", "高麗菜"].includes(opt)) {
+                            appData.purchaseCatalog["食材"].push(opt);
+                        } else if (["醬油", "油", "鹽", "味精", "胡椒粉"].includes(opt)) {
+                            appData.purchaseCatalog["調味料"].push(opt);
+                        } else {
+                            appData.purchaseCatalog["其他"].push(opt);
+                        }
+                    }
+                });
+            } else {
+                appData.purchaseCatalog["食材"] = ["米", "蛋", "肉", "排骨", "香腸", "鳳梨", "蔥", "洋蔥", "胡蘿蔔", "白蘿蔔", "玉米", "芹菜", "高麗菜"];
+                appData.purchaseCatalog["調味料"] = ["醬油", "油", "鹽", "味精", "胡椒粉"];
+                appData.purchaseCatalog["其他"] = [];
+            }
+        }
+        
+        appData.purchaseCategories.forEach(cat => {
+            if (!appData.purchaseCatalog[cat]) appData.purchaseCatalog[cat] = [];
+        });
+
         Object.values(CATEGORIES).forEach(cat => {
             const count = appData.products.filter(p => p.cat === cat).length;
             if(count < 2) {
-                for(let i=0; i<(2-count); i++) appData.products.push({name:"", price:0, comm:35, vol:0, cat:cat});
+                for(let i=0; i<(2-count); i++) appData.products.push({name:"", price:0, vol:0, cat:cat});
             }
         });
     }
@@ -321,14 +406,7 @@
     };
 
     window.addOption = (type) => {
-        if (type === 'items') {
-            const input = document.getElementById('new-item-input');
-            const val = input.value.trim();
-            if (!val) return;
-            if (appData.purchaseOptions.includes(val)) { alert("此品項已存在囉！"); return; }
-            appData.purchaseOptions.push(val);
-            input.value = '';
-        } else {
+        if (type === 'shops') {
             const input = document.getElementById('new-shop-input');
             const val = input.value.trim();
             if (!val) return;
@@ -340,13 +418,7 @@
     };
 
     window.deleteOption = (type) => {
-        if (type === 'items') {
-            const select = document.getElementById('delete-item-select');
-            const val = select.value;
-            if (!val) { alert("請先選擇一個品項！"); return; }
-            if (!confirm(`確定要刪除「${val}」嗎？`)) return;
-            appData.purchaseOptions = appData.purchaseOptions.filter(opt => opt !== val);
-        } else {
+        if (type === 'shops') {
             const select = document.getElementById('delete-shop-select');
             const val = select.value;
             if (!val) { alert("請先選擇一個店家！"); return; }
@@ -356,11 +428,71 @@
         sync();
     };
 
+    window.addCatalogCategory = () => {
+        const cat = prompt("請輸入想要新增的品項大分類名稱（如：包材、清潔用品）：");
+        if (!cat || !cat.trim()) return;
+        const cleanCat = cat.trim();
+        if (appData.purchaseCategories.includes(cleanCat)) { alert("這個分類已經存在囉！"); return; }
+        appData.purchaseCategories.push(cleanCat);
+        appData.purchaseCatalog[cleanCat] = [];
+        sync();
+    };
+
+    window.deleteCatalogCategory = (cat) => {
+        if ((appData.purchaseCatalog[cat] || []).length > 0) {
+            if (!confirm(`警告：「${cat}」分類中還有設定品項！刪除分類將會連同品項一同拔除。確定要刪除嗎？`)) return;
+        } else {
+            if (!confirm(`確定要刪除「${cat}」這個空分類嗎？`)) return;
+        }
+        appData.purchaseCategories = appData.purchaseCategories.filter(c => c !== cat);
+        delete appData.purchaseCatalog[cat];
+        sync();
+    };
+
+    window.addCatalogItem = () => {
+        const cat = document.getElementById('catalog-add-cat-select').value;
+        const input = document.getElementById('catalog-add-item-input');
+        const item = input.value.trim();
+
+        if (!cat) { alert("請先在下拉選單選擇好【分類】之後才可以增加品項哦！"); return; }
+        if (!item) { alert("請填輸入品項名稱！"); return; }
+
+        let isDuplicate = false;
+        appData.purchaseCategories.forEach(c => {
+            if (appData.purchaseCatalog[c].includes(item)) isDuplicate = true;
+        });
+        if (isDuplicate) { alert(`品項「${item}」已經存在於目前的系統庫中，請換個名字或去舊區查找。`); return; }
+
+        appData.purchaseCatalog[cat].push(item);
+        input.value = '';
+        sync();
+    };
+
+    window.deleteCatalogItem = () => {
+        const sel = document.getElementById('catalog-del-item-select').value;
+        if (!sel) { alert("請先選擇要刪除的品項！"); return; }
+        const [cat, item] = sel.split('||');
+        if (!confirm(`確定要將「${item}」從【${cat}】群組中徹底移除嗎？`)) return;
+        appData.purchaseCatalog[cat] = appData.purchaseCatalog[cat].filter(i => i !== item);
+        sync();
+    };
+
+    window.moveCatalogItem = (cat, idx, dir) => {
+        const list = appData.purchaseCatalog[cat];
+        const targetIdx = idx + dir;
+        if (targetIdx < 0 || targetIdx >= list.length) return;
+        
+        const temp = list[idx];
+        list[idx] = list[targetIdx];
+        list[targetIdx] = temp;
+        sync();
+    };
+
     window.addProductToCategory = (catName) => {
         const name = prompt(`請輸入要在【${catName}】新增的品項名稱：`);
         if (!name || !name.trim()) return;
         if (appData.products.some(p => p.name === name.trim())) { alert("此品項名稱已存在囉！"); return; }
-        appData.products.push({ name: name.trim(), price: 0, comm: 35, vol: 0, cat: catName });
+        appData.products.push({ name: name.trim(), price: 0, vol: 0, cat: catName });
         sync();
     };
 
@@ -381,8 +513,15 @@
         }
     };
 
+    window.updatePlatformComm = (platform, val) => {
+        if (!appData.platformComms) appData.platformComms = { self: 0, uber: 35, panda: 35 };
+        appData.platformComms[platform] = parseFloat(val) || 0;
+        sync();
+    };
+
     function renderAll() {
-        renderDaily();
+        renderSalesPage();
+        renderCatalogPage();
         renderProductSettings();
         renderPurchasePage();
         renderHistory();
@@ -394,15 +533,6 @@
     }
 
     function renderManagerSelects() {
-        const itemSel = document.getElementById('delete-item-select');
-        if (itemSel) {
-            const cur = itemSel.value;
-            itemSel.innerHTML = '<option value="">--選擇品項--</option>';
-            appData.purchaseOptions.forEach(opt => {
-                const o = document.createElement('option'); o.value = opt; o.innerText = opt;
-                if(opt === cur) o.selected = true; itemSel.appendChild(o);
-            });
-        }
         const shopSel = document.getElementById('delete-shop-select');
         if (shopSel) {
             const cur = shopSel.value;
@@ -414,16 +544,81 @@
         }
     }
 
+    function renderCatalogPage() {
+        const addCatSel = document.getElementById('catalog-add-cat-select');
+        if (addCatSel) {
+            const cur = addCatSel.value;
+            addCatSel.innerHTML = '<option value="">-選擇分類-</option>';
+            appData.purchaseCategories.forEach(cat => {
+                const o = document.createElement('option'); o.value = cat; o.innerText = cat;
+                if (cat === cur) o.selected = true; addCatSel.appendChild(o);
+            });
+        }
+
+        const delItemSel = document.getElementById('catalog-del-item-select');
+        if (delItemSel) {
+            const cur = delItemSel.value;
+            delItemSel.innerHTML = '<option value="">-選擇品項-</option>';
+            appData.purchaseCategories.forEach(cat => {
+                const group = document.createElement('optgroup'); group.label = cat;
+                (appData.purchaseCatalog[cat] || []).forEach(item => {
+                    const o = document.createElement('option'); o.value = `${cat}||${item}`; o.innerText = item;
+                    if (`${cat}||${item}` === cur) o.selected = true; group.appendChild(o);
+                });
+                delItemSel.appendChild(group);
+            });
+        }
+
+        const container = document.getElementById('catalog-list-container'); if (!container) return;
+        container.innerHTML = '';
+
+        appData.purchaseCategories.forEach(cat => {
+            const card = document.createElement('div'); card.className = 'card';
+            let itemsHtml = '';
+            const items = appData.purchaseCatalog[cat] || [];
+            
+            if (items.length === 0) {
+                itemsHtml = '<div style="padding:12px; color:#aaa; text-align:center; font-size:13px;">此分類目前空空如也，請於上方新增。</div>';
+            } else {
+                items.forEach((item, idx) => {
+                    itemsHtml += `
+                        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 15px; border-bottom:1px solid var(--border); background:white;">
+                            <span style="font-size:14px; font-weight:500; color:var(--dark);">${item}</span>
+                            <div style="display:flex; gap:6px;">
+                                <button class="btn-cat-action add" style="padding:3px 8px; background:#95a5a6;" onclick="window.moveCatalogItem('${cat}',${idx},-1)" ${idx===0 ? 'disabled style="opacity:0.2; cursor:not-allowed;"':''}>🔼 上移</button>
+                                <button class="btn-cat-action add" style="padding:3px 8px; background:#95a5a6;" onclick="window.moveCatalogItem('${cat}',${idx},1)" ${idx===items.length-1 ? 'disabled style="opacity:0.2; cursor:not-allowed;"':''}>🔽 下移</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            card.innerHTML = `
+                <div class="category-header-wrapper" style="margin-top:0; background:#eaf2f8; border-left-color:var(--accent);">
+                    <div class="category-divider-title" style="color:#2980b9;">${cat}</div>
+                    <button class="btn-cat-action del" style="padding:2px 8px;" onclick="window.deleteCatalogCategory('${cat}')">❌ 刪除此類別</button>
+                </div>
+                <div style="border:1px solid var(--border); border-radius:6px; overflow:hidden; background:#fafafa;">${itemsHtml}</div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
     function renderInputDropdowns() {
         const itemSel = document.getElementById('input-item-select');
         if (itemSel) {
             const cur = itemSel.value;
             itemSel.innerHTML = '<option value="">--請選擇--</option>';
-            appData.purchaseOptions.forEach(opt => {
-                const o = document.createElement('option'); o.value = opt; o.innerText = opt;
-                if(opt === cur) o.selected = true; itemSel.appendChild(o);
+            appData.purchaseCategories.forEach(cat => {
+                const group = document.createElement('optgroup'); group.label = cat;
+                (appData.purchaseCatalog[cat] || []).forEach(opt => {
+                    const o = document.createElement('option'); o.value = opt; o.innerText = opt;
+                    if(opt === cur) o.selected = true; group.appendChild(o);
+                });
+                itemSel.appendChild(group);
             });
         }
+        
         const shopSel = document.getElementById('input-shop-select');
         if (shopSel) {
             const cur = shopSel.value;
@@ -433,87 +628,158 @@
                 if(opt === cur) o.selected = true; shopSel.appendChild(o);
             });
         }
+        
+        const shortcut1 = document.getElementById('input-shop-shortcut1');
+        const shortcut2 = document.getElementById('input-shop-shortcut2');
+        if (shortcut1 && shortcut2) {
+            const cur1 = shortcut1.value; const cur2 = shortcut2.value;
+            shortcut1.innerHTML = '<option value="">-無-</option>';
+            shortcut2.innerHTML = '<option value="">-無-</option>';
+            
+            appData.purchaseCategories.forEach(cat => {
+                const group1 = document.createElement('optgroup'); group1.label = cat;
+                const group2 = document.createElement('optgroup'); group2.label = cat;
+                (appData.purchaseCatalog[cat] || []).forEach(opt => {
+                    const o1 = document.createElement('option'); o1.value = opt; o1.innerText = opt;
+                    if(opt === cur1) o1.selected = true; group1.appendChild(o1);
+                    
+                    const o2 = document.createElement('option'); o2.value = opt; o2.innerText = opt;
+                    if(opt === cur2) o2.selected = true; group2.appendChild(o2);
+                });
+                shortcut1.appendChild(group1); shortcut2.appendChild(group2);
+            });
+        }
     }
 
-    function renderDaily() {
-        const c = document.getElementById('daily-list'); if(!c) return;
-        c.innerHTML = ''; 
-        
-        let filteredProds = appData.products.filter(p => p.name !== "");
-        if (filteredProds.length === 0) {
-            c.innerHTML = '<div class="card" style="text-align:center; padding:20px; color:#aaa;">請先到「品項定價設定」設定產品名稱哦！</div>';
-            return;
+    function renderSalesPage() {
+        const salesSel = document.getElementById('input-sales-select');
+        if (salesSel) {
+            const cur = salesSel.value;
+            salesSel.innerHTML = '<option value="">--請選擇品項--</option>';
+            
+            const catOrder = [CATEGORIES.FRIED_RICE, CATEGORIES.DRINK, CATEGORIES.SIDE];
+            catOrder.forEach(cat => {
+                const catProducts = appData.products.filter(p => p.cat === cat && p.name && p.name.trim() !== "");
+                if (catProducts.length > 0) {
+                    const group = document.createElement('optgroup'); group.label = cat;
+                    catProducts.sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant'));
+                    catProducts.forEach(p => {
+                        const o = document.createElement('option'); o.value = p.name; o.innerText = p.name;
+                        if(p.name === cur) o.selected = true; group.appendChild(o);
+                    });
+                    salesSel.appendChild(group);
+                }
+            });
         }
 
-        const catOrder = { "🍚 炒飯系列": 1, "🥤 飲品系列": 2, "🥗 小菜系列": 3 };
-        
-        let sortedProdsWithIdx = filteredProds.map(p => {
-            return { originalIdx: appData.products.indexOf(p), product: p };
-        }).sort((a, b) => {
-            const orderA = catOrder[a.product.cat] || 99;
-            const orderB = catOrder[b.product.cat] || 99;
-            return orderA - orderB;
-        });
-
-        let curCat = "";
-        let currentCard = null;
-        
-        sortedProdsWithIdx.forEach((item) => {
-            const p = item.product;
-            const actualIdx = item.originalIdx;
-            
-            if (p.cat !== curCat) {
-                curCat = p.cat;
-                currentCard = document.createElement('div');
-                currentCard.className = 'card';
-                currentCard.innerHTML = `
-                    <div class="category-header-wrapper" style="margin-top:0;"><div class="category-divider-title">${curCat}</div></div>
-                    <div class="grid-header sales-grid"><div>品項名稱</div><div>今日份數</div><div>售價</div><div>本月累計</div></div>
-                `;
-                c.appendChild(currentCard);
+        const listContainer = document.getElementById('sales-records-list');
+        if (listContainer) {
+            listContainer.innerHTML = '';
+            if (!appData.salesRecords || appData.salesRecords.length === 0) {
+                listContainer.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:15px; color:#aaa; font-size:13px;">本月暫無已儲存的銷量明細。</div>';
+            } else {
+                appData.salesRecords.forEach((r, idx) => {
+                    const row = document.createElement('div'); row.className = 'grid-row sales-input-grid';
+                    row.innerHTML = `
+                        <input type="date" value="${r.date}" disabled>
+                        <input type="text" value="${r.name}" disabled style="text-align:left; padding-left:8px;">
+                        <input type="text" value="${r.platform}" disabled>
+                        <input type="number" value="${r.qty}" disabled>
+                        <div style="text-align:center; font-weight:bold; color:#7f8c8d;">$${Math.round(r.subtotal)}</div>
+                        <div style="text-align:center; font-weight:bold; color:var(--success);">$${Math.round(r.actual)}</div>
+                        <button class="btn-del" onclick="window.delSalesRow(${idx})">×</button>
+                    `;
+                    listContainer.appendChild(row);
+                });
             }
-            const row = document.createElement('div'); row.className = 'grid-row sales-grid';
-            row.innerHTML = `<div style="text-align:left; font-weight:bold; padding-left:5px;">${p.name}</div><input type="number" class="day-qty" data-index="${actualIdx}" value="0"><div style="text-align:center;">$${p.price}</div><div style="text-align:center; font-weight:bold; color:var(--accent);">${p.vol}</div>`;
-            currentCard.appendChild(row);
-        });
+        }
     }
 
-    window.saveDaily = () => {
-        const dateInput = document.getElementById('daily-date-picker').value;
-        let dayRevenue = 0;
+    window.calcSalesRowTotals = () => {
+        const prodName = document.getElementById('input-sales-select').value;
+        const platform = document.getElementById('input-sales-platform').value;
+        const qty = parseFloat(document.getElementById('input-sales-qty').value) || 0;
 
-        document.querySelectorAll('.day-qty').forEach(input => {
-            const qty = parseFloat(input.value) || 0;
-            const prod = appData.products[input.dataset.index];
-            prod.vol += qty;
-            
-            // 計算此筆輸入的實領營收扣掉抽成後的實收
-            dayRevenue += (prod.price * qty) * (1 - prod.comm / 100);
-            input.value = 0;
-        });
+        const prod = appData.products.find(p => p.name === prodName);
+        const price = prod ? prod.price : 0;
 
-        // 將當日營收累加至該日期的動態營收紀錄中
-        if (!appData.dailyRevenues[dateInput]) appData.dailyRevenues[dateInput] = 0;
-        appData.dailyRevenues[dateInput] += dayRevenue;
+        let commPct = 0;
+        if (platform === '自取') commPct = appData.platformComms.self || 0;
+        if (platform === 'Uber-Eats') commPct = appData.platformComms.uber || 0;
+        if (platform === '熊貓') commPct = appData.platformComms.panda || 0;
 
-        sync(); 
-        alert("今日銷量已成功扣除、累加，且營收已同步更新至月曆！");
+        const subtotal = price * qty;
+        const actual = subtotal * (1 - commPct / 100);
+
+        document.getElementById('input-sales-subtotal').innerText = `$ ${Math.round(subtotal).toLocaleString()}`;
+        document.getElementById('input-sales-actual').innerText = `$ ${Math.round(actual).toLocaleString()}`;
+    };
+
+    window.commitSales = () => {
+        const date = document.getElementById('input-sales-date').value;
+        const name = document.getElementById('input-sales-select').value;
+        const platform = document.getElementById('input-sales-platform').value;
+        const qty = parseFloat(document.getElementById('input-sales-qty').value) || 0;
+
+        if (!date) { alert("請選擇銷售日期！"); return; }
+        if (!name) { alert("請選擇品項！"); return; }
+        if (!platform) { alert("請選擇抽成管道！"); return; }
+        if (qty <= 0) { alert("銷售份數必須大於 0 哦！"); return; }
+
+        const prod = appData.products.find(p => p.name === name);
+        const price = prod ? prod.price : 0;
+
+        let commPct = 0;
+        if (platform === '自取') commPct = appData.platformComms.self || 0;
+        if (platform === 'Uber-Eats') commPct = appData.platformComms.uber || 0;
+        if (platform === '熊貓') commPct = appData.platformComms.panda || 0;
+
+        const subtotal = price * qty;
+        const actual = subtotal * (1 - commPct / 100);
+
+        if (!appData.salesRecords) appData.salesRecords = [];
+        appData.salesRecords.push({ date, name, platform, qty, price, subtotal, actual });
+
+        document.getElementById('input-sales-select').value = '';
+        document.getElementById('input-sales-platform').value = '自取';
+        document.getElementById('input-sales-qty').value = 0;
+        document.getElementById('input-sales-subtotal').innerText = '$ 0';
+        document.getElementById('input-sales-actual').innerText = '$ 0';
+
+        sync();
+        alert("銷售明細已成功加入並同步！");
+    };
+
+    window.delSalesRow = (idx) => {
+        if (confirm("確定要刪除這筆已儲存的銷售明細嗎？")) {
+            appData.salesRecords.splice(idx, 1);
+            sync();
+        }
     };
 
     window.shopClosed = () => {
-        const date = document.getElementById('daily-date-picker').value;
+        const date = document.getElementById('input-sales-date').value;
+        if(!date) { alert("請先在銷售日期中點選要設定的店休日期！"); return; }
         if(!confirm(`確定要在 ${date} 設定為「今日店休」嗎？`)) return;
-        appData.history.push({ date: date, rev: 0, fCost: 0, oCost: 0, net: 0, isClosed: true, sales: [] });
+        appData.history.push({ date: date, rev: 0, fCost: 0, oCost: 0, net: 0, isClosed: true, sales: [], fullPurchases: { items: [], shops: [] } });
         sync(); alert("店休紀錄已同步！");
     };
 
     function renderProductSettings() {
+        const commSelf = document.getElementById('comm-self');
+        const commUber = document.getElementById('comm-uber');
+        const commPanda = document.getElementById('comm-panda');
+        if (commSelf && commUber && commPanda && appData.platformComms) {
+            commSelf.value = appData.platformComms.self ?? 0;
+            commUber.value = appData.platformComms.uber ?? 35;
+            commPanda.value = appData.platformComms.panda ?? 35;
+        }
+
         const container = document.getElementById('product-settings-container'); if(!container) return;
         container.innerHTML = '';
         
         Object.values(CATEGORIES).forEach(cat => {
-            const card = document.createElement('div');
-            card.className = 'card';
+            const card = document.createElement('div'); card.className = 'card';
             card.innerHTML = `
                 <div class="category-header-wrapper" style="margin-top: 0;">
                     <div class="category-divider-title">${cat}</div>
@@ -523,7 +789,7 @@
                     </div>
                 </div>
                 <div class="grid-header setting-grid">
-                    <div>品項名稱</div><div>售價</div><div>抽成 %</div><div></div>
+                    <div>品項名稱</div><div>售價</div><div></div>
                 </div>
                 <div id="settings-rows-${cat}"></div>
             `;
@@ -534,12 +800,10 @@
             
             catProducts.forEach(p => {
                 const actualIdx = appData.products.indexOf(p);
-                const row = document.createElement('div');
-                row.className = 'grid-row setting-grid';
+                const row = document.createElement('div'); row.className = 'grid-row setting-grid';
                 row.innerHTML = `
                     <input type="text" placeholder="(未命名)" value="${p.name}" onchange="window.updateProd(${actualIdx},'name',this.value)">
                     <input type="number" value="${p.price}" onchange="window.updateProd(${actualIdx},'price',this.value)">
-                    <input type="number" value="${p.comm}" onchange="window.updateProd(${actualIdx},'comm',this.value)">
                     <div></div>
                 `;
                 rowsContainer.appendChild(row);
@@ -559,7 +823,14 @@
             } else {
                 appData.purchases.items.forEach((r, idx) => {
                     const row = document.createElement('div'); row.className = 'grid-row cost-grid';
-                    let optionsHtml = appData.purchaseOptions.map(opt => `<option value="${opt}" ${r.item === opt ? 'selected' : ''}>${opt}</option>`).join('');
+                    let optionsHtml = '';
+                    appData.purchaseCategories.forEach(cat => {
+                        optionsHtml += `<optgroup label="${cat}">`;
+                        (appData.purchaseCatalog[cat] || []).forEach(opt => {
+                            optionsHtml += `<option value="${opt}" ${r.item === opt ? 'selected' : ''}>${opt}</option>`;
+                        });
+                        optionsHtml += `</optgroup>`;
+                    });
                     row.innerHTML = `
                         <input type="date" value="${r.date}" disabled>
                         <select disabled><option value="">--請選擇--</option>${optionsHtml}</select>
@@ -580,7 +851,7 @@
                 shopsList.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:15px; color:#aaa; font-size:13px;">暫無儲存總帳</div>';
             } else {
                 appData.purchases.shops.forEach((r, idx) => {
-                    const row = document.createElement('div'); row.className = 'grid-row shop-grid';
+                    const row = document.createElement('div'); row.className = 'grid-row shop-record-grid';
                     let shopOptionsHtml = appData.shopOptions.map(opt => `<option value="${opt}" ${r.shop === opt ? 'selected' : ''}>${opt}</option>`).join('');
                     row.innerHTML = `
                         <input type="date" value="${r.date}" disabled>
@@ -596,8 +867,11 @@
     }
 
     window.commitPurchase = (type) => {
+        const inputDateId = type === 'items' ? 'input-item-date' : 'input-shop-date';
+        const date = document.getElementById(inputDateId).value;
+        if(!date) { alert("請選擇採購日期！"); return; }
+
         if (type === 'items') {
-            const date = document.getElementById('input-item-date').value;
             const item = document.getElementById('input-item-select').value;
             const price = parseFloat(document.getElementById('input-item-price').value) || 0;
             const qty = parseFloat(document.getElementById('input-item-qty').value) || 0;
@@ -614,18 +888,22 @@
             document.getElementById('input-item-note').value = '';
             document.getElementById('input-item-subtotal').innerText = '$ 0';
         } else {
-            const date = document.getElementById('input-shop-date').value;
             const shop = document.getElementById('input-shop-select').value;
             const total = parseFloat(document.getElementById('input-shop-total').value) || 0;
-            const note = document.getElementById('input-shop-note').value.trim();
+            const sc1 = document.getElementById('input-shop-shortcut1').value;
+            const sc2 = document.getElementById('input-shop-shortcut2').value;
+            const rawNote = document.getElementById('input-shop-note').value.trim();
 
             if (!shop) { alert("請選擇消費的店家！"); return; }
             if (total <= 0) { alert("總價必須大於 0 哦！"); return; }
 
+            const note = (sc1 ? sc1 : "") + (sc2 ? sc2 : "") + rawNote;
             appData.purchases.shops.push({ date, shop, total, note });
 
             document.getElementById('input-shop-select').value = '';
             document.getElementById('input-shop-total').value = 0;
+            document.getElementById('input-shop-shortcut1').value = '';
+            document.getElementById('input-shop-shortcut2').value = '';
             document.getElementById('input-shop-note').value = '';
         }
         sync();
@@ -644,10 +922,17 @@
     };
 
     function calculateDash() {
-        let rev = 0; appData.products.forEach(p => rev += (p.price * p.vol) * (1 - p.comm/100));
-        let fCost = 0;
-        let oCost = 0;
+        let rev = 0; appData.products.forEach(p => p.vol = 0);
         
+        if (appData.salesRecords) {
+            appData.salesRecords.forEach(r => {
+                rev += r.actual;
+                let prod = appData.products.find(p => p.name === r.name);
+                if (prod) prod.vol += r.qty;
+            });
+        }
+        
+        let fCost = 0; let oCost = 0;
         if(appData.purchases) {
             appData.purchases.items.forEach(r => fCost += (r.price * r.qty));
             appData.purchases.shops.forEach(r => oCost += r.total);
@@ -659,45 +944,54 @@
         return { rev, fCost, oCost, net: rev - (fCost+oCost) };
     }
 
-    /* 關鍵優化區：月曆核心渲染邏輯，改為依據實際發生日期動態計算顯示 */
+    window.changeCalendarMonth = (offset) => {
+        calMonth += offset;
+        if (calMonth < 0) { calMonth = 11; calYear--; } 
+        else if (calMonth > 11) { calMonth = 0; calYear++; }
+        renderCalendar();
+    };
+
     function renderCalendar() {
         const grid = document.getElementById('calendar-grid'); if(!grid) return;
-        grid.innerHTML = ''; const now = new Date(); const year = now.getFullYear(); const month = now.getMonth();
-        document.getElementById('calendar-title').innerText = `${year}年 ${month + 1}月 營收/支出月曆`;
-        const firstDay = new Date(year, month, 1).getDay(); const daysInMonth = new Date(year, month + 1, 0).getDate();
+        grid.innerHTML = ''; 
+        
+        document.getElementById('calendar-title').innerText = `${calYear}年 ${calMonth + 1}月 營收/支出月曆`;
+        
+        const firstDay = new Date(calYear, calMonth, 1).getDay(); 
+        const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+        const todayObj = new Date();
         
         for(let i=0; i<firstDay; i++) { const div = document.createElement('div'); div.className = 'cal-day empty'; grid.appendChild(div); }
         
         for(let d=1; d<=daysInMonth; d++) {
-            const div = document.createElement('div'); div.className = 'cal-day'; if(d === now.getDate()) div.classList.add('today');
+            const div = document.createElement('div'); div.className = 'cal-day'; 
+            if(d === todayObj.getDate() && calMonth === todayObj.getMonth() && calYear === todayObj.getFullYear()) {
+                div.classList.add('today');
+            }
             div.innerHTML = `<span class="date-num">${d}</span>`;
             
-            // 格式化標準日期字串，如 "2026-05-01" 
-            const curDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-            
-            // 1. 檢查歷史紀錄中該日是否有「店休」標記
-            const historyMatch = appData.history ? appData.history.find(h => h.date === curDateStr || new Date(h.date).toLocaleDateString() === new Date(curDateStr).toLocaleDateString()) : null;
+            const curDateStr = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            const historyMatch = appData.history ? appData.history.find(h => h.date === curDateStr) : null;
             
             if (historyMatch && historyMatch.isClosed) {
                 div.innerHTML += `<span class="closed-tag">休</span>`;
             } else {
-                // 2. 獲取當日即時營收 (從今日銷量輸入取得)
-                let dayRevenue = appData.dailyRevenues[curDateStr] || 0;
+                let dayRevenue = 0;
+                if (appData.salesRecords) {
+                    appData.salesRecords.forEach(r => { if(r.date === curDateStr) dayRevenue += r.actual; });
+                }
                 
-                // 3. 獲取當日總支出 (動態撈取單品與店家的加總)
                 let dayCost = 0;
                 if (appData.purchases) {
                     appData.purchases.items.forEach(r => { if (r.date === curDateStr) dayCost += (r.price * r.qty); });
                     appData.purchases.shops.forEach(r => { if (r.date === curDateStr) dayCost += r.total; });
                 }
                 
-                // 4. 如果歷史結算有該日非店休資料 (相容舊版/匯入資料)，且無新動態營收時，採用歷史數值
                 if (historyMatch && dayRevenue === 0 && dayCost === 0) {
                     dayRevenue = historyMatch.rev || 0;
                     dayCost = (historyMatch.fCost || 0) + (historyMatch.oCost || 0);
                 }
 
-                // 5. 只要當天有任何營收或支出數據，就顯示於月曆格子內
                 if (dayRevenue > 0 || dayCost > 0) {
                     div.innerHTML += `
                         <div class="data-wrapper">
@@ -716,7 +1010,7 @@
         
         const header = `
             <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid var(--border); flex-wrap: wrap; gap:10px;">
-                <span style="font-weight:bold; color:var(--dark);">歷史結算明細表</span>
+                <span style="font-weight:bold; color:var(--dark);">實時流水帳明細總表</span>
                 <div class="history-header-actions">
                     <button class="btn-excel-action export" onclick="window.exportHistoryToExcel()">📥 匯出 Excel</button>
                     <label class="btn-excel-action import">
@@ -728,154 +1022,274 @@
             </div>
         `;
         
-        if (!appData.history || !appData.history.length) { 
-            c.innerHTML = header + '<div style="padding:20px;color:#999;text-align:center;">暫無紀錄</div>'; 
+        const currentDates = new Set();
+        if (appData.salesRecords) appData.salesRecords.forEach(r => currentDates.add(r.date));
+        if (appData.purchases && appData.purchases.items) appData.purchases.items.forEach(i => currentDates.add(i.date));
+        if (appData.purchases && appData.purchases.shops) appData.purchases.shops.forEach(s => currentDates.add(s.date));
+
+        const currentRows = [];
+        currentDates.forEach(dateStr => {
+            if (!dateStr) return;
+            if (appData.history && appData.history.some(h => h.date === dateStr)) return;
+
+            let rev = 0; let daySalesMap = {}; 
+            
+            if (appData.salesRecords) {
+                appData.salesRecords.forEach(r => {
+                    if (r.date === dateStr) {
+                        rev += r.actual;
+                        daySalesMap[r.name] = (daySalesMap[r.name] || 0) + r.qty;
+                    }
+                });
+            }
+
+            let fCost = 0; let oCost = 0; let items = []; let shops = [];
+            if (appData.purchases && appData.purchases.items) {
+                appData.purchases.items.forEach(i => { if (i.date === dateStr) { fCost += (i.price * i.qty); items.push({...i}); } });
+            }
+            if (appData.purchases && appData.purchases.shops) {
+                appData.purchases.shops.forEach(s => { if (s.date === dateStr) { oCost += s.total; shops.push({...s}); } });
+            }
+
+            let daySales = Object.keys(daySalesMap).map(k => ({ name: k, vol: daySalesMap[k] }));
+
+            currentRows.push({
+                date: dateStr, rev, fCost, oCost, net: rev - (fCost + oCost),
+                isClosed: false, isCurrent: true, sales: daySales, fullPurchases: { items, shops }
+            });
+        });
+
+        let allRecords = [];
+        if (appData.history) appData.history.forEach(h => allRecords.push({ ...h, isCurrent: false }));
+        allRecords = allRecords.concat(currentRows);
+        allRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        if (allRecords.length === 0) { 
+            c.innerHTML = header + '<div style="padding:20px;color:#999;text-align:center;">暫無任何營業 or 支出紀錄</div>'; 
             return; 
         }
         
-        let html = header + '<table style="width:100%; border-collapse: collapse; text-align:center;"><tr style="background:#f8f9fa;font-weight:bold;"><td style="padding:10px;">日期</td><td>營收</td><td>純利</td><td>詳情</td></tr>';
-        appData.history.slice().reverse().forEach((h, i) => {
-            const rIdx = appData.history.length - 1 - i;
-            if(h.isClosed) { html += `<tr class="history-row"><td>${h.date}</td><td colspan="2" style="color:#7f8c8d; font-weight:bold;">【 今日店休 】</td><td>-</td></tr>`; } 
+        let html = header + '<table style="width:100%; border-collapse: collapse; text-align:center;"><tr style="background:#f8f9fa;font-weight:bold;"><td style="padding:10px; text-align:left; padding-left:15px;">日期 / 狀態</td><td>當日營收</td><td>當日純利</td><td>詳情</td></tr>';
+        
+        allRecords.forEach((h, idx) => {
+            const elementId = `rec-det-${idx}`;
+            if(h.isClosed) { 
+                html += `<tr class="history-row" style="background:#fdfefe;"><td style="padding:12px 15px; text-align:left; color:#7f8c8d; font-weight:bold;">${h.date} <span style="background:#7f8c8d; color:white; padding:1px 5px; border-radius:3px; font-size:10px; margin-left:5px;">店休</span></td><td colspan="2" style="color:#95a5a6;">-</td><td>-</td></tr>`; 
+            } 
             else {
-                html += `<tr class="history-row" onclick="document.getElementById('det-${rIdx}').style.display = (document.getElementById('det-${rIdx}').style.display === 'block' ? 'none' : 'block')"><td>${h.date}</td><td>$${Math.round(h.rev)}</td><td style="color:var(--success); font-weight:bold;">$${Math.round(h.net)}</td><td style="color:var(--accent);">▾</td></tr>
-                <tr><td colspan="4" style="padding:0;"><div id="det-${rIdx}" class="details-pane"><div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;"><div><div style="font-weight:bold;margin-bottom:5px;">🍱 銷量詳情</div>${h.sales?h.sales.map(s=>`<div>${s.name}: ${s.vol}份</div>`).join(''):''}</div><div><div style="font-weight:bold;margin-bottom:5px;">💰 支出摘要</div>單品採購: $${Math.round(h.fCost)}<br>店家總帳: $${Math.round(h.oCost)}</div></div></div></td></tr>`;
+                let itemsDetailHtml = h.fullPurchases && h.fullPurchases.items && h.fullPurchases.items.length > 0 
+                    ? h.fullPurchases.items.map(item => `<div style="padding:2px 0;">• [單品] <span style="color:#2c3e50;font-weight:bold;">${item.item}</span> x${item.qty} ➔ <span style="color:var(--danger); font-weight:bold;">$${Math.round(item.price * item.qty)}</span> ${item.note ? `<span style="color:#95a5a6;">(${item.note})</span>` : ''}</div>`).join('')
+                    : `<div>單品採購小計: $${Math.round(h.fCost)}</div>`;
+
+                let shopsDetailHtml = h.fullPurchases && h.fullPurchases.shops && h.fullPurchases.shops.length > 0 
+                    ? h.fullPurchases.shops.map(shop => `<div style="padding:2px 0;">• [總帳] <span style="color:#16a085;font-weight:bold;">${shop.shop}</span> ➔ <span style="color:var(--danger); font-weight:bold;">$${Math.round(shop.total)}</span> ${shop.note ? `<span style="color:#95a5a6;">(${shop.note})</span>` : ''}</div>`).join('')
+                    : `<div>店家總帳小計: $${Math.round(h.oCost)}</div>`;
+
+                let dateBadge = h.isCurrent 
+                    ? `${h.date} <span style="background:#e67e22; color:white; padding:1px 5px; border-radius:3px; font-size:10px; font-weight:bold; margin-left:5px;">即時</span>`
+                    : `${h.date} <span style="background:#2ecc71; color:white; padding:1px 5px; border-radius:3px; font-size:10px; font-weight:bold; margin-left:5px;">已結存</span>`;
+
+                html += `
+                <tr class="history-row" onclick="document.getElementById('${elementId}').style.display = (document.getElementById('${elementId}').style.display === 'block' ? 'none' : 'block')">
+                    <td style="padding:12px 15px; text-align:left; font-weight:500;">${dateBadge}</td>
+                    <td>$${Math.round(h.rev).toLocaleString()}</td>
+                    <td style="color:${h.net >= 0 ? 'var(--success)' : 'var(--danger)'}; font-weight:bold;">$${Math.round(h.net).toLocaleString()}</td>
+                    <td style="color:var(--accent);">▾</td>
+                </tr>
+                <tr>
+                    <td colspan="4" style="padding:0;">
+                        <div id="${elementId}" class="details-pane">
+                            <div style="display:grid; grid-template-columns:1fr 1.2fr; gap:20px; text-align:left;">
+                                <div>
+                                    <div style="font-weight:bold;margin-bottom:5px; color:#d35400;">🍱 品項銷量摘要</div>
+                                    ${(h.sales && h.sales.length > 0 ? h.sales.map(s=>`<div>${s.name}: ${s.vol}份</div>`).join(''):'無銷售資訊')}
+                                </div>
+                                <div>
+                                    <div style="font-weight:bold;margin-bottom:5px; color:#2980b9;">💰 完整支出明細清單</div>
+                                    ${itemsDetailHtml}
+                                    ${shopsDetailHtml}
+                                    ${(!h.fullPurchases || (h.fullPurchases.items.length===0 && h.fullPurchases.shops.length===0)) ? '<div style="color:#aaa;">此日無任何採購明細</div>':''}
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>`;
             }
         });
         c.innerHTML = html + '</table>';
     }
 
+    window.archiveMonth = () => {
+        if(!confirm("確定結算本月嗎？系統將會自動把本月的所有即時流動數據，按照「各自的實際日期」拆分存入歷史歸檔區。隨後當月數據將歸零重置。")) return;
+        
+        const currentDates = new Set();
+        if (appData.salesRecords) appData.salesRecords.forEach(r => currentDates.add(r.date));
+        if (appData.purchases && appData.purchases.items) appData.purchases.items.forEach(i => currentDates.add(i.date));
+        if (appData.purchases && appData.purchases.shops) appData.purchases.shops.forEach(s => currentDates.add(s.date));
+
+        currentDates.forEach(dateStr => {
+            if (!dateStr) return;
+            if (appData.history && appData.history.some(h => h.date === dateStr)) return;
+
+            let rev = 0; let daySalesMap = {};
+            if (appData.salesRecords) {
+                appData.salesRecords.forEach(r => {
+                    if (r.date === dateStr) {
+                        rev += r.actual;
+                        daySalesMap[r.name] = (daySalesMap[r.name] || 0) + r.qty;
+                    }
+                });
+            }
+
+            let fCost = 0; let oCost = 0; let items = []; let shops = [];
+            if (appData.purchases && appData.purchases.items) {
+                appData.purchases.items.forEach(i => { if (i.date === dateStr) { fCost += (i.price * i.qty); items.push({...i}); } });
+            }
+            if (appData.purchases && appData.purchases.shops) {
+                appData.purchases.shops.forEach(s => { if (s.date === dateStr) { oCost += s.total; shops.push({...s}); } });
+            }
+
+            let daySales = Object.keys(daySalesMap).map(k => ({ name: k, vol: daySalesMap[k] }));
+
+            appData.history.push({ 
+                date: dateStr, rev: rev, fCost: fCost, oCost: oCost, net: rev - (fCost + oCost), isClosed: false, sales: daySales, fullPurchases: { items, shops }
+            });
+        });
+        
+        appData.products.forEach(p => p.vol = 0);
+        appData.purchases = { items: [], shops: [] };
+        appData.salesRecords = []; 
+        
+        sync(); 
+        alert("本月結算完成！");
+    };
+
     window.exportHistoryToExcel = () => {
         try {
-            if (!appData.history || appData.history.length === 0) {
-                alert("目前還沒有任何歷史結算紀錄可以匯出哦！");
-                return;
-            }
+            const currentDates = new Set();
+            if (appData.salesRecords) appData.salesRecords.forEach(r => currentDates.add(r.date));
+            if (appData.purchases && appData.purchases.items) appData.purchases.items.forEach(i => currentDates.add(i.date));
+            if (appData.purchases && appData.purchases.shops) appData.purchases.shops.forEach(s => currentDates.add(s.date));
+
+            const currentRows = [];
+            currentDates.forEach(dateStr => {
+                if (!dateStr) return;
+                if (appData.history && appData.history.some(h => h.date === dateStr)) return;
+                let rev = 0; let daySalesMap = {};
+                if (appData.salesRecords) {
+                    appData.salesRecords.forEach(r => { if (r.date === dateStr) { rev += r.actual; daySalesMap[r.name] = (daySalesMap[r.name] || 0) + r.qty; } });
+                }
+                let fCost = 0; let oCost = 0; let items = []; let shops = [];
+                if (appData.purchases && appData.purchases.items) { appData.purchases.items.forEach(i => { if (i.date === dateStr) { fCost += (i.price * i.qty); items.push({...i}); } }); }
+                if (appData.purchases && appData.purchases.shops) { appData.purchases.shops.forEach(s => { if (s.date === dateStr) { oCost += s.total; shops.push({...s}); } }); }
+                let daySales = Object.keys(daySalesMap).map(k => ({ name: k, vol: daySalesMap[k] }));
+                currentRows.push({ date: dateStr, rev, fCost, oCost, net: rev - (fCost + oCost), isClosed: false, isCurrent: true, sales: daySales, fullPurchases: { items, shops } });
+            });
+
+            let allRecords = [];
+            if (appData.history) appData.history.forEach(h => allRecords.push({ ...h, isCurrent: false }));
+            allRecords = allRecords.concat(currentRows);
+            allRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            if (allRecords.length === 0) { alert("目前還沒有任何紀錄可以匯出哦！"); return; }
 
             const wb = XLSX.utils.book_new();
             const historyRows = [];
             
-            appData.history.forEach(h => {
+            allRecords.forEach(h => {
                 if (h.isClosed) {
                     historyRows.push({
-                        "結算日期": h.date,
-                        "狀態": "今日店休",
-                        "實領營收": 0,
-                        "單品採購總額": 0,
-                        "店家總帳總額": 0,
-                        "預估純利": 0,
-                        "詳細品項銷量摘要": "無"
+                        "紀錄日期": h.date, "狀態類型": "今日店休", "當日實領營收": 0, "單品採購金額": 0, "店家總帳金額": 0, "預估純利": 0, "品項銷量摘要": "無", "完整支出清單明細": "無"
                     });
                 } else {
-                    const salesSummary = h.sales ? h.sales.map(s => `${s.name}:${s.vol}份`).join(' | ') : "";
+                    const salesSummary = h.sales ? h.sales.map(s => `${s.name}:${s.vol}份`).join(' | ') : "無銷售資訊";
+                    let purchaseSummary = "無支出";
+                    if(h.fullPurchases) {
+                        let iStr = h.fullPurchases.items ? h.fullPurchases.items.map(i => `[單品]${i.item}x${i.qty}=$${i.price*i.qty}`).join(' , ') : "";
+                        let sStr = h.fullPurchases.shops ? h.fullPurchases.shops.map(s => `[總帳]${s.shop}=$${s.total}`).join(' , ') : "";
+                        purchaseSummary = [iStr, sStr].filter(Boolean).join(' | ');
+                    }
+
                     historyRows.push({
-                        "結算日期": h.date,
-                        "狀態": "營業日",
-                        "實領營收": Math.round(h.rev || 0),
-                        "單品採購總額": Math.round(h.fCost || 0),
-                        "店家總帳總額": Math.round(h.oCost || 0),
-                        "預估純利": Math.round(h.net || 0),
-                        "詳細品項銷量摘要": salesSummary
+                        "紀錄日期": h.date, "狀態類型": h.isCurrent ? "即時流動(未結算)" : "歷史已歸檔", "當日實領營收": Math.round(h.rev || 0), "單品採購金額": Math.round(h.fCost || 0), "店家總帳金額": Math.round(h.oCost || 0), "預估純利": Math.round(h.net || 0), "品項銷量摘要": salesSummary, "完整支出清單明細": purchaseSummary
                     });
                 }
             });
 
             const ws = XLSX.utils.json_to_sheet(historyRows);
-            XLSX.utils.book_append_sheet(wb, ws, "歷史明細紀錄");
-
+            XLSX.utils.book_append_sheet(wb, ws, "實時大表報表");
             const today = new Date().toISOString().split('T')[0];
-            XLSX.writeFile(wb, `Hippoman_歷史結算報表_${today}.xlsx`);
+            XLSX.writeFile(wb, `Hippoman_實時流水帳_${today}.xlsx`);
         } catch (error) {
             alert("Excel 匯出失敗：" + error.message);
         }
     };
 
     window.importHistoryFromExcel = (input) => {
-        const file = input.files[0];
-        if (!file) return;
-
-        if (!confirm("⚠️ 警告：匯入歷史紀錄將會【完全覆蓋】目前的歷史明細與月曆顯示，確定要繼續嗎？")) {
-            input.value = '';
-            return;
-        }
+        const file = input.files[0]; if (!file) return;
+        if (!confirm("⚠️ 警告：匯入將會完全覆蓋【歷史歸檔區】，確定要繼續嗎？")) { input.value = ''; return; }
 
         const reader = new FileReader();
         reader.onload = async (e) => {
             try {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, { type: 'array' });
+                if (!workbook.SheetNames.includes("實時大表報表")) { throw new Error("找不到對應的「實時大表報表」工作表欄位。"); }
 
-                if (!workbook.SheetNames.includes("歷史明細紀錄")) {
-                    throw new Error("找不到名為「歷史明細紀錄」的工作表，請確認檔案格式是否正確。");
-                }
-
-                const sheet = workbook.Sheets["歷史明細紀錄"];
+                const sheet = workbook.Sheets["實時大表報表"];
                 const json = XLSX.utils.sheet_to_json(sheet);
 
                 const importedHistory = json.map(row => {
-                    const isClosed = row["狀態"] === "今日店休";
-                    let salesArray = [];
-                    const salesStr = row["詳細品項銷量摘要"] || "";
+                    const isClosed = row["狀態類型"] === "今日店休";
+                    let salesArray = []; const salesStr = row["品項銷量摘要"] || "";
                     if (salesStr && salesStr !== "無") {
                         salesArray = salesStr.split(' | ').map(item => {
                             const parts = item.split(':');
-                            return {
-                                name: parts[0] || "",
-                                vol: parts[1] ? parseFloat(parts[1].replace("份", "")) : 0
-                            };
+                            return { name: parts[0] || "", vol: parts[1] ? parseFloat(parts[1].replace("份", "")) : 0 };
                         });
                     }
 
+                    let fullPurchasesObj = { items: [], shops: [] };
+                    const memoStr = row["完整支出清單明細"] || "";
+                    if(memoStr && memoStr !== "無") {
+                        let parts = memoStr.split(' | ');
+                        if(parts[0] && parts[0].includes("[單品]")) {
+                            parts[0].split(' , ').forEach(raw => {
+                                let match = raw.match(/\[單品\](.*)x(.*)=\$(.*)/);
+                                if(match) fullPurchasesObj.items.push({ date: String(row["紀錄日期"]||""), item: match[1], qty: parseFloat(match[2])||0, price: (parseFloat(match[3])/(parseFloat(match[2])||1))||0, note:"" });
+                            });
+                        }
+                        let shopPart = parts.find(p => p.includes("[總帳]"));
+                        if(shopPart) {
+                            shopPart.split(' , ').forEach(raw => {
+                                let match = raw.match(/\[總帳\](.*)=\$(.*)/);
+                                if(match) fullPurchasesObj.shops.push({ date: String(row["紀錄日期"]||""), shop: match[1], total: parseFloat(match[2])||0, note:"" });
+                            });
+                        }
+                    }
+
                     return {
-                        date: String(row["結算日期"] || ""),
-                        isClosed: isClosed,
-                        rev: parseFloat(row["實領營收"]) || 0,
-                        fCost: parseFloat(row["單品採購總額"]) || 0,
-                        oCost: parseFloat(row["店家總帳總額"]) || 0,
+                        date: String(row["紀錄日期"] || ""), isClosed: isClosed,
+                        rev: parseFloat(row["當日實領營收"]) || 0,
+                        fCost: parseFloat(row["單品採購金額"]) || 0,
+                        oCost: parseFloat(row["店家總帳金額"]) || 0,
                         net: parseFloat(row["預估純利"]) || 0,
-                        sales: salesArray
+                        sales: salesArray,
+                        fullPurchases: fullPurchasesObj
                     };
                 }).filter(h => h.date !== "");
 
-                if (importedHistory.length === 0) {
-                    throw new Error("Excel 檔案內沒有合法的歷史數據！");
-                }
-
+                if (importedHistory.length === 0) { throw new Error("Excel 內無有效合法資料！"); }
                 appData.history = importedHistory;
-                await sync();
-                alert(`🎉 成功匯入 ${importedHistory.length} 筆歷史結算紀錄！`);
+                await sync(); alert(`🎉 成功還原覆蓋 ${importedHistory.length} 筆歷史存檔！`);
             } catch (error) {
                 alert("匯入失敗：" + error.message);
-            } finally {
-                input.value = '';
-            }
+            } finally { input.value = ''; }
         };
         reader.readAsArrayBuffer(file);
     };
 
-    window.clearHistory = () => { if(confirm("確定要清空所有歷史紀錄嗎？")) { appData.history = []; appData.dailyRevenues = {}; sync(); } };
-    
-    window.archiveMonth = () => {
-        if(!confirm("確定結算本月嗎？數據將歸零並存入歷史。")) return;
-        const s = calculateDash();
-        const curDateStr = new Date().toISOString().split('T')[0];
-        
-        appData.history.push({ 
-            date: curDateStr, 
-            rev: s.rev, 
-            fCost: s.fCost, 
-            oCost: s.oCost, 
-            net: s.net, 
-            isClosed: false, 
-            sales: appData.products.filter(p => p.vol > 0).map(p => ({name: p.name, vol: p.vol})) 
-        });
-        
-        appData.products.forEach(p => p.vol = 0);
-        appData.purchases = { items: [], shops: [] };
-        appData.dailyRevenues = {}; // 結算完成後清空當月即時營收字典
-        sync(); 
-        alert("本月結算完成！過往數據已成功歸檔存入歷史。");
-    };
+    window.clearHistory = () => { if(confirm("確定要清空所有紀錄嗎？(僅清除歷史歸檔區)")) { appData.history = []; sync(); } };
 
     let profitChart, salesChart;
     function initCharts() {
@@ -895,7 +1309,7 @@
     window.onload = () => {
         const todayStr = new Date().toISOString().split('T')[0];
         
-        const dp = document.getElementById('daily-date-picker'); if(dp) dp.value = todayStr;
+        const salesDp = document.getElementById('input-sales-date'); if(salesDp) salesDp.value = todayStr;
         const itemDp = document.getElementById('input-item-date'); if(itemDp) itemDp.value = todayStr;
         const shopDp = document.getElementById('input-shop-date'); if(shopDp) shopDp.value = todayStr;
         
