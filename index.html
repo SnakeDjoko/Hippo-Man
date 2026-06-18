@@ -109,7 +109,7 @@
             body { flex-direction: column; height: 100dvh; }
             .mobile-header { display: flex; }
             
-            /* 【修復核心】：在手機端預設往左推 100% 隱藏起來，避免卡在畫面上 */
+            /* 在手機端預設往左推 100% 隱藏起來，避免卡在畫面上 */
             .sidebar { position: fixed; top: 50px; left: 0; height: calc(100vh - 50px); height: calc(100dvh - 50px); width: 80%; max-width: 280px; transform: translateX(-100%); }
             .sidebar.show { transform: translateX(0); }
             
@@ -330,8 +330,7 @@
                 <span id="settlement-toggle-icon" style="color: var(--accent); font-weight: bold; font-size: 14px;">展開 ▾</span>
             </div>
             <div id="monthly-settlement-details" style="display: none; margin-top: 15px; border-top: 1px solid var(--border); padding-top: 15px;">
-                <!-- 數據加總將由此處 JavaScript 動態填入 -->
-            </div>
+                </div>
         </div>
     </div>
 
@@ -869,7 +868,7 @@
                         optionsHtml += `</optgroup>`;
                     });
                     row.innerHTML = `
-                        <input type="date" value="${r.date}" disabled>
+                        <input type="date" value="${r.date}" onchange="window.updatePurchase('items',${idx},'date',this.value)">
                         <select disabled><option value="">--請選擇--</option>${optionsHtml}</select>
                         <input type="number" value="${r.price}" disabled>
                         <input type="number" value="${r.qty}" disabled>
@@ -891,10 +890,10 @@
                     const row = document.createElement('div'); row.className = 'grid-row shop-record-grid';
                     let shopOptionsHtml = appData.shopOptions.map(opt => `<option value="${opt}" ${r.shop === opt ? 'selected' : ''}>${opt}</option>`).join('');
                     row.innerHTML = `
-                        <input type="date" value="${r.date}" disabled>
+                        <input type="date" value="${r.date}" onchange="window.updatePurchase('shops',${idx},'date',this.value)">
                         <select disabled><option value="">--請選擇店家--</option>${shopOptionsHtml}</select>
                         <input type="number" value="${r.total}" disabled>
-                        <input type="text" placeholder="無備註" value="${r.note || ''}" style="text-align:left; padding-left:8px;" disabled>
+                        <input type="text" placeholder="無備註" value="${r.note || ''}" style="text-align:left; padding-left:8px;" onchange="window.updatePurchase('shops',${idx},'note',this.value)">
                         <button class="btn-del" onclick="window.delPurchaseRow('shops',${idx})">×</button>
                     `;
                     shopsList.appendChild(row);
