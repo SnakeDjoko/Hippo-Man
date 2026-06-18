@@ -261,7 +261,7 @@
             </div>
             <button class="btn-main" style="padding:10px; margin-bottom:20px; font-size:13px; background:var(--accent);" onclick="window.commitPurchase('items')">💾 儲存單品明細</button>
 
-            <div class="sub-block-title">🔒 已儲存資訊紀錄</div>
+            <div class="sub-block-title">🔒 已儲存資訊紀錄 (依日期正序排列)</div>
             <div class="grid-header cost-grid">
                 <div>日期</div><div>品項</div><div>單價</div><div>數量</div><div>小計</div><div>備註</div><div></div>
             </div>
@@ -302,7 +302,7 @@
             </div>
             <button class="btn-main" style="padding:10px; margin-bottom:20px; font-size:13px; background:var(--success);" onclick="window.commitPurchase('shops')">💾 儲存店家總帳</button>
 
-            <div class="sub-block-title">🔒 已儲存資訊紀錄</div>
+            <div class="sub-block-title">🔒 已儲存資訊紀錄 (依日期正序排列)</div>
             <div class="grid-header shop-record-grid">
                 <div>日期</div><div>店家</div><div>總價</div><div>完整組合備註</div><div></div>
             </div>
@@ -857,7 +857,13 @@
             if (appData.purchases.items.length === 0) {
                 itemsList.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:15px; color:#aaa; font-size:13px;">暫無儲存明細</div>';
             } else {
-                appData.purchases.items.forEach((r, idx) => {
+                // 將資料附加原始索引，並依日期正序排列（舊到新）
+                const sortedItems = appData.purchases.items
+                    .map((r, idx) => ({ ...r, originalIdx: idx }))
+                    .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                sortedItems.forEach((r) => {
+                    const idx = r.originalIdx; // 綁定雲端陣列原本的位置，防止同步修改時出錯
                     const row = document.createElement('div'); row.className = 'grid-row cost-grid';
                     let optionsHtml = '';
                     appData.purchaseCategories.forEach(cat => {
@@ -886,7 +892,13 @@
             if (appData.purchases.shops.length === 0) {
                 shopsList.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:15px; color:#aaa; font-size:13px;">暫無儲存總帳</div>';
             } else {
-                appData.purchases.shops.forEach((r, idx) => {
+                // 將資料附加原始索引，並依日期正序排列（舊到新）
+                const sortedShops = appData.purchases.shops
+                    .map((r, idx) => ({ ...r, originalIdx: idx }))
+                    .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                sortedShops.forEach((r) => {
+                    const idx = r.originalIdx; // 綁定雲端陣列原本的位置
                     const row = document.createElement('div'); row.className = 'grid-row shop-record-grid';
                     let shopOptionsHtml = appData.shopOptions.map(opt => `<option value="${opt}" ${r.shop === opt ? 'selected' : ''}>${opt}</option>`).join('');
                     row.innerHTML = `
