@@ -64,7 +64,7 @@
 
         /* 欄位寬度配置 */
         .sales-input-grid { grid-template-columns: 1.2fr 1.5fr 1.2fr 1fr 1fr 1.2fr 0.4fr; min-width: 650px; }
-        .setting-grid { grid-template-columns: 2fr 1fr 0.3fr; min-width: 350px; }
+        .setting-grid { grid-template-columns: 1.5fr 0.8fr 1.2fr 0.2fr; min-width: 400px; }
         .cost-grid { grid-template-columns: 1.4fr 1.2fr 1fr 1fr 1fr 2fr 0.4fr; min-width: 700px; }
         .shop-input-grid { grid-template-columns: 1.2fr 1.2fr 1fr 1fr 1fr 1.8fr 0.4fr; min-width: 750px; }
         .shop-record-grid { grid-template-columns: 1.4fr 1.5fr 1.5fr 2.5fr 0.4fr; min-width: 600px; }
@@ -401,7 +401,7 @@
             } else {
                 appData.purchaseCatalog["食材"] = ["米", "蛋", "肉", "排骨", "香腸", "鳳梨", "蔥", "洋蔥", "胡蘿蔔", "白蘿蔔", "玉米", "芹菜", "高麗菜"];
                 appData.purchaseCatalog["調味料"] = ["醬油", "油", "鹽", "味精", "胡椒粉"];
-                appData.purchaseCatalog["其他"] = [];
+                appData.purchaseCatalog["開他"] = [];
             }
         }
         
@@ -555,6 +555,31 @@
         sync();
     };
 
+    window.moveProduct = (idx, dir) => {
+        const currentProd = appData.products[idx];
+        if (!currentProd) return;
+        const cat = currentProd.cat;
+
+        // 撈出同一大類的所有品項並記下它們在原陣列的索引
+        const catProductsWithIdx = appData.products
+            .map((p, i) => ({ p, i }))
+            .filter(item => item.p.cat === cat);
+
+        const currentPosition = catProductsWithIdx.findIndex(item => item.i === idx);
+        const targetPosition = currentPosition + dir;
+
+        if (targetPosition < 0 || targetPosition >= catProductsWithIdx.length) return;
+
+        const targetIdx = catProductsWithIdx[targetPosition].i;
+
+        // 在原陣列中進行內容交換
+        const temp = appData.products[idx];
+        appData.products[idx] = appData.products[targetIdx];
+        appData.products[targetIdx] = temp;
+
+        sync();
+    };
+
     function renderAll() {
         renderSalesPage();
         renderCatalogPage();
@@ -698,7 +723,7 @@
                 const catProducts = appData.products.filter(p => p.cat === cat && p.name && p.name.trim() !== "");
                 if (catProducts.length > 0) {
                     const group = document.createElement('optgroup'); group.label = cat;
-                    catProducts.sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant'));
+                    // 已移除自動按字母排序，完全遵循自訂順序
                     catProducts.forEach(p => {
                         const o = document.createElement('option'); o.value = p.name; o.innerText = p.name;
                         if(p.name === cur) o.selected = true; group.appendChild(o);
@@ -825,21 +850,30 @@
                     </div>
                 </div>
                 <div class="grid-header setting-grid">
-                    <div>品項名稱</div><div>售價</div><div></div>
+                    <div>品項名稱</div><div>售價</div><div>排序調整</div><div></div>
                 </div>
                 <div id="settings-rows-${cat}"></div>
             `;
             container.appendChild(card);
             
             const rowsContainer = document.getElementById(`settings-rows-${cat}`);
-            const catProducts = appData.products.filter(p => p.cat === cat);
             
-            catProducts.forEach(p => {
-                const actualIdx = appData.products.indexOf(p);
+            // 抓出屬於該分類的品項，並記錄其在完整大陣列中的 index
+            const catProductsWithIdx = appData.products
+                .map((p, i) => ({ p, i }))
+                .filter(item => item.p.cat === cat);
+            
+            catProductsWithIdx.forEach((item, catIdx) => {
+                const p = item.p;
+                const actualIdx = item.i;
                 const row = document.createElement('div'); row.className = 'grid-row setting-grid';
                 row.innerHTML = `
                     <input type="text" placeholder="(未命名)" value="${p.name}" onchange="window.updateProd(${actualIdx},'name',this.value)">
                     <input type="number" value="${p.price}" onchange="window.updateProd(${actualIdx},'price',this.value)">
+                    <div style="display:flex; gap:4px; justify-content:center; align-items:center;">
+                        <button class="btn-cat-action add" style="padding:2px 6px; background:#95a5a6; font-size:11px; height:28px;" onclick="window.moveProduct(${actualIdx},-1)" ${catIdx===0 ? 'disabled style="opacity:0.2; cursor:not-allowed;"':''}>🔼</button>
+                        <button class="btn-cat-action add" style="padding:2px 6px; background:#95a5a6; font-size:11px; height:28px;" onclick="window.moveProduct(${actualIdx},1)" ${catIdx===catProductsWithIdx.length-1 ? 'disabled style="opacity:0.2; cursor:not-allowed;"':''}>🔽</button>
+                    </div>
                     <div></div>
                 `;
                 rowsContainer.appendChild(row);
