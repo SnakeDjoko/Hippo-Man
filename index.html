@@ -176,7 +176,7 @@
         <div class="card">
             <div style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
                 <div class="sub-block-title" style="margin:0;">✍️ 新增銷售明細</div>
-                <button class="btn-rest" onclick="window.shopClosed()">🚫 今日店休</button>
+                <button class="btn-rest" onclick="window.shopClosed()">🚫 選擇日期店休</button>
             </div>
             
             <div class="grid-header sales-input-grid" style="background: #fff9e6; border-bottom: none; padding: 4px 5px; font-size: 12px; color: #d35400;">
@@ -196,7 +196,27 @@
                 <div></div>
             </div>
             <button class="btn-main" style="padding:10px; margin-bottom:20px; font-size:13px; background:var(--primary);" onclick="window.commitSales()">💾 儲存銷售明細</button>
-
+<div style="margin-top: 25px; margin-bottom: 15px;">
+                <div class="sub-block-title" style="margin:0; color: #16a085;">💰 直接輸入單日銷售額 (不分品項)</div>
+            </div>
+            
+            <div class="grid-header sales-input-grid" style="background: #e8f8f5; border-bottom: none; padding: 4px 5px; font-size: 12px; color: #16a085;">
+                <div>銷售日期</div><div>項目類型</div><div>抽成管道</div><div>銷售金額</div><div>金額小計</div><div>實際銷售額</div><div></div>
+            </div>
+            <div class="grid-row sales-input-grid input-row-box" style="margin-top:0; background: #eafaf1 !important; border-color: #2ecc71;">
+                <input type="date" id="input-direct-date">
+                <input type="text" value="直接輸入總額" disabled style="background:#f8f9fa; text-align:center; font-weight:bold; color:#16a085;">
+                <select id="input-direct-platform" onchange="window.calcDirectRowTotals()">
+                    <option value="自取">自取</option>
+                    <option value="Uber-Eats">Uber-Eats</option>
+                    <option value="熊貓">熊貓</option>
+                </select>
+                <input type="number" id="input-direct-amount" placeholder="輸入金額" value="0" oninput="window.calcDirectRowTotals()">
+                <div style="text-align:center; font-weight:bold; color:#7f8c8d; line-height:38px;" id="input-direct-subtotal">$ 0</div>
+                <div style="text-align:center; font-weight:bold; color:var(--success); line-height:38px;" id="input-direct-actual">$ 0</div>
+                <div></div>
+            </div>
+            <button class="btn-main" style="padding:10px; margin-bottom:20px; font-size:13px; background:var(--success);" onclick="window.commitDirectSales()">💾 儲存單日銷售額</button>
             <div class="sub-block-title">🔒 本月已儲存銷售紀錄</div>
             <div class="grid-header sales-input-grid">
                 <div>日期</div><div>品項</div><div>管道</div><div>份數</div><div>金額小計</div><div>實際銷售額</div><div></div>
@@ -311,7 +331,7 @@
     </div>
 
     <div id="calendar-page" class="page">
-        <h2>📅 營收月表數據分析</h2>
+        <h2>📅 營收月表數據 analysis</h2>
         <div class="card calendar-box" style="padding:0; overflow:hidden;">
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: white; border-bottom: 1px solid var(--border);">
                 <button class="btn-rest" onclick="window.changeCalendarMonth(-1)" style="background: #34495e;">◀ 上個月</button>
@@ -723,7 +743,6 @@
                 const catProducts = appData.products.filter(p => p.cat === cat && p.name && p.name.trim() !== "");
                 if (catProducts.length > 0) {
                     const group = document.createElement('optgroup'); group.label = cat;
-                    // 已移除自動按字母排序，完全遵循自訂順序
                     catProducts.forEach(p => {
                         const o = document.createElement('option'); o.value = p.name; o.innerText = p.name;
                         if(p.name === cur) o.selected = true; group.appendChild(o);
@@ -739,11 +758,16 @@
             if (!appData.salesRecords || appData.salesRecords.length === 0) {
                 listContainer.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:15px; color:#aaa; font-size:13px;">本月暫無已儲存的銷量明細。</div>';
             } else {
-                appData.salesRecords.forEach((r, idx) => {
+                const sortedRecords = appData.salesRecords
+                    .map((r, idx) => ({ ...r, originalIdx: idx }))
+                    .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                sortedRecords.forEach((r) => {
+                    const idx = r.originalIdx;
                     const row = document.createElement('div'); row.className = 'grid-row sales-input-grid';
                     row.innerHTML = `
-                        <input type="date" value="${r.date}" disabled>
-                        <input type="text" value="${r.name}" disabled style="text-align:left; padding-left:8px;">
+                        <input type="date" value="${r.date}" onchange="window.updateSalesRow(${idx},'date',this.value)">
+                        <input type="text" value="${r.name}" disabled style="text-align:center;">
                         <input type="text" value="${r.platform}" disabled>
                         <input type="number" value="${r.qty}" disabled>
                         <div style="text-align:center; font-weight:bold; color:#7f8c8d;">$${Math.round(r.subtotal)}</div>
@@ -811,6 +835,82 @@
         alert("銷售明細已成功加入並同步！");
     };
 
+// 新增功能：自動計算直接輸入的金額小計與扣抽成後實際銷售額
+    window.calcDirectRowTotals = () => {
+        const amountInput = document.getElementById('input-direct-amount');
+        const platformSelect = document.getElementById('input-direct-platform');
+        const amount = amountInput ? (parseFloat(amountInput.value) || 0) : 0;
+        const platform = platformSelect ? platformSelect.value : '自取';
+        
+        let commPct = 0;
+        if (appData.platformComms) {
+            if (platform === '自取') commPct = appData.platformComms.self || 0;
+            if (platform === 'Uber-Eats') commPct = appData.platformComms.uber || 0;
+            if (platform === '熊貓') commPct = appData.platformComms.panda || 0;
+        }
+        
+        const subtotal = amount;
+        const actual = subtotal * (1 - commPct / 100);
+        
+        const subtotalEl = document.getElementById('input-direct-subtotal');
+        const actualEl = document.getElementById('input-direct-actual');
+        
+        if (subtotalEl) subtotalEl.innerText = `$ ${Math.round(subtotal).toLocaleString()}`;
+        if (actualEl) actualEl.innerText = `$ ${Math.round(actual).toLocaleString()}`;
+    };
+
+    // 新增功能：儲存單日銷售總額並同步至 Firebase 雲端
+    window.commitDirectSales = () => {
+        const date = document.getElementById('input-direct-date').value;
+        const platform = document.getElementById('input-direct-platform').value;
+        const amount = parseFloat(document.getElementById('input-direct-amount').value) || 0;
+        
+        if (!date) {
+            alert("請選擇銷售日期！");
+            return;
+        }
+        if (amount <= 0) {
+            alert("銷售金額必須大於 0 哦！");
+            return;
+        }
+        
+        let commPct = 0;
+        if (appData.platformComms) {
+            if (platform === '自取') commPct = appData.platformComms.self || 0;
+            if (platform === 'Uber-Eats') commPct = appData.platformComms.uber || 0;
+            if (platform === '熊貓') commPct = appData.platformComms.panda || 0;
+        }
+        
+        const subtotal = amount;
+        const actual = subtotal * (1 - commPct / 100);
+        
+        if (!appData.salesRecords) appData.salesRecords = [];
+        
+        // 模擬寫入銷售紀錄陣列，以便直接相容系統原有的所有加總與報表功能
+        appData.salesRecords.push({
+            date: date,
+            name: "直接輸入銷售額",
+            platform: platform,
+            qty: 1,
+            price: amount,
+            subtotal: subtotal,
+            actual: actual
+        });
+        
+        // 儲存成功後重置輸入欄位
+        document.getElementById('input-direct-amount').value = 0;
+        document.getElementById('input-direct-subtotal').innerText = '$ 0';
+        document.getElementById('input-direct-actual').innerText = '$ 0';
+        
+        sync(); // 呼叫您原本的 Firebase 雲端同步函數
+        alert("單日銷售總額已成功加入並同步！");
+    };
+
+    window.updateSalesRow = (idx, key, value) => {
+        appData.salesRecords[idx][key] = value;
+        sync();
+    };
+
     window.delSalesRow = (idx) => {
         if (confirm("確定要刪除這筆已儲存的銷售明細嗎？")) {
             appData.salesRecords.splice(idx, 1);
@@ -821,7 +921,7 @@
     window.shopClosed = () => {
         const date = document.getElementById('input-sales-date').value;
         if(!date) { alert("請先在銷售日期中點選要設定的店休日期！"); return; }
-        if(!confirm(`確定要在 ${date} 設定為「今日店休」嗎？`)) return;
+        if(!confirm(`確定要在 ${date} 設定為「店休」嗎？`)) return;
         appData.history.push({ date: date, rev: 0, fCost: 0, oCost: 0, net: 0, isClosed: true, sales: [], fullPurchases: { items: [], shops: [] } });
         sync(); alert("店休紀錄已同步！");
     };
@@ -1518,13 +1618,13 @@
     function initCharts() {
         const ctxP = document.getElementById('profitChart'); const ctxS = document.getElementById('salesChart');
         if(!ctxP || !ctxS) return;
-        profitChart = new Chart(ctxP, { type: 'doughnut', data: { labels: ['單品採購', '店家總帳', '純利'], datasets: [{ data: [0,0,0], backgroundColor: ['#e74c3c', '#9b59b6', '#27ae60'] }] }, options: { responsive: true, maintainAspectRatio: false } });
+        profitChart = new Chart(ctxP, { type: 'doughnut', data: { labels: ['單品採購', '店家總帳', '營收'], datasets: [{ data: [0,0,0], backgroundColor: ['#e74c3c', '#9b59b6', '#f39c12'] }] }, options: { responsive: true, maintainAspectRatio: false } });
         salesChart = new Chart(ctxS, { type: 'bar', data: { labels: [], datasets: [{ data: [], backgroundColor: '#f39c12' }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
     }
     
     function updateCharts(s) {
         if(!profitChart || !salesChart) return;
-        profitChart.data.datasets[0].data = [s.fCost, s.oCost, Math.max(0, s.net)]; profitChart.update();
+        profitChart.data.datasets[0].data = [s.fCost, s.oCost, s.rev]; profitChart.update();
         const sorted = [...appData.products].filter(p => p.vol > 0).sort((a,b) => b.vol - a.vol);
         salesChart.data.labels = sorted.map(p => p.name); salesChart.data.datasets[0].data = sorted.map(p => p.vol); salesChart.update();
     }
@@ -1535,6 +1635,7 @@
     const salesDp = document.getElementById('input-sales-date'); if(salesDp) salesDp.value = todayStr;
     const itemDp = document.getElementById('input-item-date'); if(itemDp) itemDp.value = todayStr;
     const shopDp = document.getElementById('input-shop-date'); if(shopDp) shopDp.value = todayStr;
+const directDp = document.getElementById('input-direct-date'); if(directDp) directDp.value = todayStr;
     
     const calcSubtotal = () => {
         const priceInput = document.getElementById('input-item-price');
